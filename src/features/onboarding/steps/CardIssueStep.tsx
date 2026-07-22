@@ -1,13 +1,6 @@
 import type { Card } from '@/types/entities';
 import { CardMunai } from '@/components/ui/CardMunai';
-
-const CARD_TYPE_LABEL: Record<Card['cardType'], string> = {
-  fl_person: 'ФЛ · персональная',
-  fl_passenger: 'ФЛ · легковая',
-  fl_truck: 'ФЛ · грузовая',
-  ul_passenger: 'ЮЛ · легковая',
-  ul_truck: 'ЮЛ · грузовая',
-};
+import { CARD_TYPE_LABEL } from '@/lib/cardLabels';
 
 interface Props {
   holderName: string;

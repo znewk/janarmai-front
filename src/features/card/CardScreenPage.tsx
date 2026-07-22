@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Card, FuelType } from '@/types/entities';
+import type { FuelType } from '@/types/entities';
 import { CardMunai } from '@/components/ui/CardMunai';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
 import { FuelingParamsStep } from './FuelingParamsStep';
@@ -10,16 +10,10 @@ import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
 import { showToast } from '@/components/ui/toastStore';
 import { FUEL_TYPE_LABEL } from '@/mocks/seed';
+import { CARD_TYPE_LABEL } from '@/lib/cardLabels';
+import { selectSessionCards } from '@/lib/sessionCards';
 
 const QR_REFRESH_SECONDS = 30;
-
-const CARD_TYPE_LABEL: Record<Card['cardType'], string> = {
-  fl_person: 'ФЛ · персональная',
-  fl_passenger: 'ФЛ · легковая',
-  fl_truck: 'ФЛ · грузовая',
-  ul_passenger: 'ЮЛ · легковая',
-  ul_truck: 'ЮЛ · грузовая',
-};
 
 type SimStep = 'idle' | 'params' | 'processing';
 
@@ -41,17 +35,10 @@ export function CardScreenPage() {
   const user = users.find((u) => u.id === currentUserId);
   const company = companies.find((c) => c.id === currentCompanyId);
 
-  const myCards = useMemo(() => {
-    if (currentCompanyId) {
-      const vehicleIds = vehicles.filter((v) => v.ownerId === currentCompanyId).map((v) => v.id);
-      return cards.filter((c) => c.vehicleId && vehicleIds.includes(c.vehicleId) && c.active);
-    }
-    if (currentUserId) {
-      const vehicleIds = vehicles.filter((v) => v.ownerKind === 'user' && v.ownerId === currentUserId).map((v) => v.id);
-      return cards.filter((c) => (c.userId === currentUserId || (c.vehicleId && vehicleIds.includes(c.vehicleId))) && c.active);
-    }
-    return [];
-  }, [cards, vehicles, currentUserId, currentCompanyId]);
+  const myCards = useMemo(
+    () => selectSessionCards({ cards, vehicles, currentUserId, currentCompanyId }),
+    [cards, vehicles, currentUserId, currentCompanyId],
+  );
 
   const activeCard = myCards.find((c) => c.id === selectedCardId) ?? myCards[0];
 

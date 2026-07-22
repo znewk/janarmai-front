@@ -10,8 +10,9 @@ import { ForeignRegisterPage } from '@/features/onboarding/ForeignRegisterPage';
 import { CompanyRegisterPage } from '@/features/onboarding/CompanyRegisterPage';
 import { CompanyForeignRegisterPage } from '@/features/onboarding/CompanyForeignRegisterPage';
 import { LoginPage } from '@/features/auth/LoginPage';
-import { CabinetPlaceholderPage } from '@/features/cabinet-fl/CabinetPlaceholderPage';
 import { CardScreenPage } from '@/features/card/CardScreenPage';
+import { CabinetRouterPage } from './CabinetRouterPage';
+import { TransactionHistoryPage } from '@/features/cabinet-fl/TransactionHistoryPage';
 
 /**
  * Дерево маршрутов потребительского модуля (тех.план раздел 4).
@@ -29,11 +30,8 @@ export function ConsumerApp() {
         <Route path="register/kmg/company-foreign" element={<CompanyForeignRegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="card" element={<CardScreenPage />} />
-        <Route path="cabinet" element={<CabinetPlaceholderPage />} />
-        <Route
-          path="cabinet/history"
-          element={<RouteStub id="S-23/S-25" title="История заправок" description="Список с фильтрами: период, карта/ТС, АЗС, топливо" />}
-        />
+        <Route path="cabinet" element={<CabinetRouterPage />} />
+        <Route path="cabinet/history" element={<TransactionHistoryPage />} />
         <Route path="dev/mocks" element={<MocksDevPage />} />
         <Route path="dev/components" element={<ComponentsDevPage />} />
         <Route path="*" element={<RouteStub id="404" title="Страница не найдена" description="Проверьте адрес маршрута" />} />
