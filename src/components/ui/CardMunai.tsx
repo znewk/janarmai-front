@@ -15,6 +15,11 @@ export interface CardMunaiProps {
   inactive?: boolean;
 }
 
+function formatBackupCode(qrToken: string): string {
+  const digits = qrToken.slice(0, 12).padEnd(12, '0');
+  return digits.match(/.{1,4}/g)!.join(' ');
+}
+
 /** Карточка пользователя MunaiCard — тёмно-синяя wallet-карта (ТЗ 8.2). */
 export function CardMunai({
   holderName,
@@ -44,6 +49,7 @@ export function CardMunai({
             <QRCodeSVG value={qrToken} size={72} level="M" />
           </div>
           <p className="text-[10px] text-navy-300">QR обновляется каждые {qrRefreshSeconds}с</p>
+          <p className="text-[10px] tracking-wide text-navy-400">{formatBackupCode(qrToken)}</p>
         </div>
       </div>
 

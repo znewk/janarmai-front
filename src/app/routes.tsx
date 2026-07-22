@@ -11,6 +11,7 @@ import { CompanyRegisterPage } from '@/features/onboarding/CompanyRegisterPage';
 import { CompanyForeignRegisterPage } from '@/features/onboarding/CompanyForeignRegisterPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { CabinetPlaceholderPage } from '@/features/cabinet-fl/CabinetPlaceholderPage';
+import { CardScreenPage } from '@/features/card/CardScreenPage';
 
 /**
  * Дерево маршрутов потребительского модуля (тех.план раздел 4).
@@ -27,10 +28,7 @@ export function ConsumerApp() {
         <Route path="register/kmg/company" element={<CompanyRegisterPage />} />
         <Route path="register/kmg/company-foreign" element={<CompanyForeignRegisterPage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route
-          path="card"
-          element={<RouteStub id="S-18" title="Карта / QR" description="MunaiCard, динамический QR, остаток лимита, симуляция заправки" />}
-        />
+        <Route path="card" element={<CardScreenPage />} />
         <Route path="cabinet" element={<CabinetPlaceholderPage />} />
         <Route
           path="cabinet/history"

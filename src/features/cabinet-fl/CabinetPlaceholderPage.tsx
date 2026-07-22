@@ -36,9 +36,14 @@ export function CabinetPlaceholderPage() {
       )}
 
       {currentUserId && (
-        <button type="button" onClick={handleLogout} className="mt-6 rounded-lg border border-navy-300 px-4 py-2 text-sm font-semibold text-navy-700">
-          Выйти
-        </button>
+        <div className="mt-6 flex gap-3">
+          <button type="button" onClick={() => navigate('/card')} className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white">
+            Карта / QR
+          </button>
+          <button type="button" onClick={handleLogout} className="rounded-lg border border-navy-300 px-4 py-2 text-sm font-semibold text-navy-700">
+            Выйти
+          </button>
+        </div>
       )}
 
       {!currentUserId && (
