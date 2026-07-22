@@ -3,6 +3,12 @@ import { ConsumerLayout } from './layout/ConsumerLayout';
 import { RouteStub } from '@/components/ui/RouteStub';
 import { MocksDevPage } from '@/dev/MocksDevPage';
 import { ComponentsDevPage } from '@/dev/ComponentsDevPage';
+import { ChannelSelectPage } from '@/features/onboarding/ChannelSelectPage';
+import { EgovBvuRegisterPage } from '@/features/onboarding/EgovBvuRegisterPage';
+import { KmgRegisterPage } from '@/features/onboarding/KmgRegisterPage';
+import { ForeignRegisterPage } from '@/features/onboarding/ForeignRegisterPage';
+import { CompanyRegisterPage } from '@/features/onboarding/CompanyRegisterPage';
+import { CompanyForeignRegisterPage } from '@/features/onboarding/CompanyForeignRegisterPage';
 
 /**
  * Дерево маршрутов потребительского модуля (тех.план раздел 4).
@@ -12,50 +18,12 @@ export function ConsumerApp() {
   return (
     <Routes>
       <Route element={<ConsumerLayout />}>
-        <Route
-          index
-          element={
-            <RouteStub id="S-00" title="Выбор канала входа" description="eGov Mobile / Приложение БВУ / Приложение КМГ" />
-          }
-        />
-        <Route
-          path="register/egov-bvu"
-          element={
-            <RouteStub
-              id="S-01/S-02"
-              title="Быстрая регистрация"
-              description="Путь eGov/БВУ для ФЛ-резидента: согласие + SMS-код"
-            />
-          }
-        />
-        <Route
-          path="register/kmg"
-          element={
-            <RouteStub
-              id="S-03"
-              title="Полная регистрация — выбор типа лица"
-              description="Приложение КМГ: ФЛ-резидент / ФЛ-иностранец / ЮЛ-резидент / ЮЛ-нерезидент"
-            />
-          }
-        />
-        <Route
-          path="register/kmg/foreign"
-          element={<RouteStub id="S-06/S-07" title="Ветка ФЛ-иностранец" description="Паспорт (MRZ) + liveness, проверка ИС «Беркут»" />}
-        />
-        <Route
-          path="register/kmg/company"
-          element={<RouteStub id="S-11..S-14" title="Ветка ЮЛ-резидент" description="БИН + ЭЦП, ГБД ЮЛ, автопарк, водители" />}
-        />
-        <Route
-          path="register/kmg/company-foreign"
-          element={
-            <RouteStub
-              id="S-11..S-14"
-              title="Ветка ЮЛ-нерезидент"
-              description="Иностранная компания, верификация директора через «Беркут»"
-            />
-          }
-        />
+        <Route index element={<ChannelSelectPage />} />
+        <Route path="register/egov-bvu" element={<EgovBvuRegisterPage />} />
+        <Route path="register/kmg" element={<KmgRegisterPage />} />
+        <Route path="register/kmg/foreign" element={<ForeignRegisterPage />} />
+        <Route path="register/kmg/company" element={<CompanyRegisterPage />} />
+        <Route path="register/kmg/company-foreign" element={<CompanyForeignRegisterPage />} />
         <Route
           path="login"
           element={<RouteStub id="S-15..S-17" title="Авторизация" description="Вход в уже созданный аккаунт: eGov/БВУ, телефон+SMS, БИН+код" />}

@@ -1,5 +1,7 @@
-import type { CardType, Residency, VehicleCategory } from '@/types/entities';
+import type { Card, CardType, Residency, VehicleCategory } from '@/types/entities';
 import { DAILY_LIMIT_L, PERSONAL_DAILY_LIMIT_L } from '@/mocks/seed/limits.seed';
+import { getNextAstanaMidnightISO } from '@/lib/time';
+import { generateId, generateQrToken } from '@/lib/id';
 
 /**
  * Правило выпуска карт при регистрации (ТЗ раздел 3, 4.1–4.5, 8.5 S-10):
@@ -45,5 +47,24 @@ export function deriveUlCardSpec(params: { residency: Residency; category: Vehic
     ownerKind: 'vehicle',
     dailyLimitL: params.residency === 'resident' ? DAILY_LIMIT_L[params.category] : null,
     priceEligible: params.residency === 'resident',
+  };
+}
+
+/** Материализация карты из спецификации при выпуске (S-10) — новая карта, свежий QR, сброс в 00:00 Астаны. */
+export function materializeCard(spec: CardSpec, owner: { userId?: string; vehicleId?: string; maskedIdentifier: string }): Card {
+  return {
+    id: generateId('card'),
+    cardType: spec.cardType,
+    ownerKind: spec.ownerKind,
+    userId: owner.userId,
+    vehicleId: owner.vehicleId,
+    maskedIdentifier: owner.maskedIdentifier,
+    dailyLimitL: spec.dailyLimitL,
+    priceEligible: spec.priceEligible,
+    usedTodayL: 0,
+    resetAt: getNextAstanaMidnightISO(),
+    qrToken: generateQrToken(),
+    qrUpdatedAt: new Date().toISOString(),
+    active: true,
   };
 }
