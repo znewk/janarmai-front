@@ -1,28 +1,19 @@
 import { Route, Routes } from 'react-router-dom';
 import { AdminLayout } from './layout/AdminLayout';
 import { RouteStub } from '@/components/ui/RouteStub';
+import { AdminLoginPage } from '@/features/auth/AdminLoginPage';
+import { AdminDashboardPlaceholderPage } from '@/features/analytics/AdminDashboardPlaceholderPage';
 
 /**
  * Дерево маршрутов аналитического модуля (тех.план раздел 4) — desktop-only.
+ * /admin/login — вне AdminLayout: отдельная landing-страница, визуально не часть шапки дашборда (ТЗ 4.7).
  */
 export function AdminApp() {
   return (
     <Routes>
+      <Route path="login" element={<AdminLoginPage />} />
       <Route element={<AdminLayout />}>
-        <Route
-          path="login"
-          element={<RouteStub id="A-00" title="Вход администратора" description="Landing-страница логин + пароль, служебный аккаунт" />}
-        />
-        <Route
-          path="dashboard"
-          element={
-            <RouteStub
-              id="A-01..A-06"
-              title="Аналитический дашборд"
-              description="KPI, сверка СНТ vs реализация, тепловая карта РК, структура потребления, интеллектуальный контроль"
-            />
-          }
-        />
+        <Route path="dashboard" element={<AdminDashboardPlaceholderPage />} />
         <Route index element={<RouteStub id="A-00" title="Вход администратора" description="Redirect на /admin/login" />} />
         <Route path="*" element={<RouteStub id="404" title="Страница не найдена" description="Проверьте адрес маршрута" />} />
       </Route>

@@ -9,6 +9,8 @@ import { KmgRegisterPage } from '@/features/onboarding/KmgRegisterPage';
 import { ForeignRegisterPage } from '@/features/onboarding/ForeignRegisterPage';
 import { CompanyRegisterPage } from '@/features/onboarding/CompanyRegisterPage';
 import { CompanyForeignRegisterPage } from '@/features/onboarding/CompanyForeignRegisterPage';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { CabinetPlaceholderPage } from '@/features/cabinet-fl/CabinetPlaceholderPage';
 
 /**
  * Дерево маршрутов потребительского модуля (тех.план раздел 4).
@@ -24,18 +26,12 @@ export function ConsumerApp() {
         <Route path="register/kmg/foreign" element={<ForeignRegisterPage />} />
         <Route path="register/kmg/company" element={<CompanyRegisterPage />} />
         <Route path="register/kmg/company-foreign" element={<CompanyForeignRegisterPage />} />
-        <Route
-          path="login"
-          element={<RouteStub id="S-15..S-17" title="Авторизация" description="Вход в уже созданный аккаунт: eGov/БВУ, телефон+SMS, БИН+код" />}
-        />
+        <Route path="login" element={<LoginPage />} />
         <Route
           path="card"
           element={<RouteStub id="S-18" title="Карта / QR" description="MunaiCard, динамический QR, остаток лимита, симуляция заправки" />}
         />
-        <Route
-          path="cabinet"
-          element={<RouteStub id="S-22/S-24" title="Личный кабинет" description="Кабинет ФЛ или ЮЛ в зависимости от типа пользователя" />}
-        />
+        <Route path="cabinet" element={<CabinetPlaceholderPage />} />
         <Route
           path="cabinet/history"
           element={<RouteStub id="S-23/S-25" title="История заправок" description="Список с фильтрами: период, карта/ТС, АЗС, топливо" />}

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "smoke:mocks": "tsx --tsconfig tsconfig.app.json scripts/smoke-mocks.ts",
     "smoke:persist": "tsx --tsconfig tsconfig.app.json scripts/smoke-persist.ts",
-    "smoke:registration": "tsx --tsconfig tsconfig.app.json scripts/smoke-registration.ts"
+    "smoke:registration": "tsx --tsconfig tsconfig.app.json scripts/smoke-registration.ts",
+    "smoke:auth": "tsx --tsconfig tsconfig.app.json scripts/smoke-auth.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
