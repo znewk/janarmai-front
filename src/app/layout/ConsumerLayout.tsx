@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { ToastViewport } from '@/components/ui/ToastNotification';
 
 /**
  * Layout потребительского модуля — mobile-first (ТЗ раздел 8, тех.план раздел 8):
@@ -7,8 +8,9 @@ import { Outlet } from 'react-router-dom';
 export function ConsumerLayout() {
   return (
     <div className="min-h-screen bg-navy-50">
-      <div className="mx-auto min-h-screen w-full max-w-md bg-white shadow-sm">
+      <div className="relative mx-auto min-h-screen w-full max-w-md bg-white shadow-sm">
         <Outlet />
+        <ToastViewport />
       </div>
     </div>
   );
