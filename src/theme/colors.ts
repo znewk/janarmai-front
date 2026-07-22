@@ -36,4 +36,16 @@ export const status = {
   blocked: '#dc2626',
 } as const;
 
-export const chartPalette = [navy[500], orange[500], navy[300], orange[300], navy[700], orange[700]];
+/**
+ * Категориальная пара для графиков (Recharts/react-simple-maps) — валидирована skills/dataviz
+ * (`validate_palette.js`, все проверки PASS в light И dark, включая контраст к белому и navy-950):
+ * #3d63a0 (более насыщенный синий, чем бренд-navy-500 — тот не проходит порог хромы для графиков)
+ * и #e05f0a (= orange-600 бренд-палитры). Используется как categorical-пара «СНТ/Продажи»,
+ * «Резиденты/Нерезиденты», «Авторизации/Чеки ОФД» и т.п. — везде ровно 2 серии.
+ */
+export const chartCategorical = { navy: '#3d63a0', orange: '#e05f0a' } as const;
+
+/** Последовательная шкала (один тон, светлый→тёмный) для тепловой карты — валидирована как ordinal-рамп. */
+export const chartSequentialNavy = ['#7e9ccb', '#5580b8', '#3d63a0', '#1f3c68', '#0a1728'] as const;
+
+export const chartPalette = [chartCategorical.navy, chartCategorical.orange];
