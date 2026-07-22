@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { ConsumerLayout } from './layout/ConsumerLayout';
 import { RouteStub } from '@/components/ui/RouteStub';
+import { MocksDevPage } from '@/dev/MocksDevPage';
 
 /**
  * Дерево маршрутов потребительского модуля (тех.план раздел 4).
@@ -70,6 +71,7 @@ export function ConsumerApp() {
           path="cabinet/history"
           element={<RouteStub id="S-23/S-25" title="История заправок" description="Список с фильтрами: период, карта/ТС, АЗС, топливо" />}
         />
+        <Route path="dev/mocks" element={<MocksDevPage />} />
         <Route path="*" element={<RouteStub id="404" title="Страница не найдена" description="Проверьте адрес маршрута" />} />
       </Route>
     </Routes>
