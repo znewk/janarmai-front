@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — палитра JanarmAI (ТЗ раздел 8.1):
+ * белый — базовый фон, navy — основной бренд-цвет, orange — акцентный цвет.
+ */
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --color-navy-50: #eef2f9;
+  --color-navy-100: #d6e0ef;
+  --color-navy-200: #adc1df;
+  --color-navy-300: #7e9ccb;
+  --color-navy-400: #4e71a8;
+  --color-navy-500: #2f5185;
+  --color-navy-600: #1f3c68;
+  --color-navy-700: #172e51;
+  --color-navy-800: #10213b;
+  --color-navy-900: #0a1728;
+  --color-navy-950: #060f1b;
+
+  --color-orange-50: #fff4eb;
+  --color-orange-100: #ffe4cc;
+  --color-orange-200: #ffc493;
+  --color-orange-300: #ffa35a;
+  --color-orange-400: #ff8a33;
+  --color-orange-500: #f97316;
+  --color-orange-600: #e05f0a;
+  --color-orange-700: #b84a08;
+  --color-orange-800: #923a08;
+  --color-orange-900: #772f08;
+  --color-orange-950: #431805;
+
+  /* Семантика прогресс-бара лимита (8.3): синий — норма, оранжевый — предупреждение */
+  --color-limit-normal: var(--color-navy-500);
+  --color-limit-warning: var(--color-orange-500);
+
+  /* Статусы блока «Интеллектуальный контроль» (8.5): легально / блокировка */
+  --color-status-ok: #16a34a;
+  --color-status-blocked: #dc2626;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-white text-navy-900 font-sans antialiased;
+    margin: 0;
+  }
+}
