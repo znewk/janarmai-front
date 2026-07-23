@@ -21,21 +21,21 @@ export function IinPhoneFormStep({ onSubmit, defaultValues }: { onSubmit: (value
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">ФИО</label>
-        <input {...register('fio')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="Иванов Иван Иванович" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">ФИО</label>
+        <input {...register('fio')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="Иванов Иван Иванович" />
         {errors.fio && <p className="mt-1 text-xs text-status-blocked">{errors.fio.message}</p>}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">ИИН</label>
-        <input {...register('iin')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="123456789012" inputMode="numeric" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">ИИН</label>
+        <input {...register('iin')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="123456789012" inputMode="numeric" />
         {errors.iin && <p className="mt-1 text-xs text-status-blocked">{errors.iin.message}</p>}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">Номер телефона</label>
-        <input {...register('phone')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="+77011234567" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
+        <input {...register('phone')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="+77011234567" />
         {errors.phone && <p className="mt-1 text-xs text-status-blocked">{errors.phone.message}</p>}
       </div>
-      <button type="submit" className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white">
+      <button type="submit" className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
         Продолжить
       </button>
     </form>

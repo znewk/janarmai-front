@@ -36,8 +36,8 @@ export function StepperStatus({ steps }: { steps: StepperStep[] }) {
               <Icon className={`h-4 w-4 ${step.status === 'in_progress' ? 'animate-spin' : ''}`} />
             </span>
             <div>
-              <p className={`text-sm font-medium ${step.status === 'error' ? 'text-status-blocked' : 'text-navy-900'}`}>{step.label}</p>
-              {step.detail && <p className="text-xs text-navy-400">{step.detail}</p>}
+              <p className={`text-sm font-medium ${step.status === 'error' ? 'text-status-blocked' : 'text-gray-900'}`}>{step.label}</p>
+              {step.detail && <p className="text-xs text-gray-400">{step.detail}</p>}
             </div>
           </li>
         );

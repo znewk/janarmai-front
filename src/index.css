@@ -5,7 +5,7 @@
  * белый — базовый фон, navy — основной бренд-цвет, orange — акцентный цвет.
  */
 @theme {
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, "Inter", "Segoe UI", sans-serif;
 
   --color-navy-50: #eef2f9;
   --color-navy-100: #d6e0ef;
@@ -51,4 +51,62 @@
     @apply bg-white text-navy-900 font-sans antialiased;
     margin: 0;
   }
+}
+
+/* Анимации для модалок/шитов в стиле iOS — полноэкранный QR, диалоги подтверждения и т.п. */
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Бегущая полоса сканирования QR — имитация терминала АЗС, считывающего код (S-18/S-20 в одной модалке). */
+@keyframes scan-sweep {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.animate-scan-sweep {
+  animation: scan-sweep 1.1s ease-in-out infinite alternate;
+}
+
+.animate-backdrop-fade-in {
+  animation: backdrop-fade-in 0.2s ease-out;
+}
+
+.animate-sheet-rise-in {
+  animation: sheet-rise-in 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.animate-modal-pop-in {
+  animation: modal-pop-in 0.22s cubic-bezier(0.32, 0.72, 0, 1);
 }

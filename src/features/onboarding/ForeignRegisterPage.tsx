@@ -61,15 +61,15 @@ export function ForeignRegisterPage() {
       {step === 'rejected' && (
         <div className="space-y-6 text-center">
           <XCircle className="mx-auto h-12 w-12 text-status-blocked" />
-          <p className="text-lg font-bold text-navy-900">Отказ в регистрации</p>
-          <p className="text-sm text-navy-500">{rejectReason}</p>
+          <p className="text-lg font-bold text-gray-900">Отказ в регистрации</p>
+          <p className="text-sm text-gray-500">{rejectReason}</p>
           <button
             type="button"
             onClick={() => {
               setPassportNumber('');
               setStep('passport');
             }}
-            className="w-full rounded-xl border border-navy-300 py-3 font-semibold text-navy-700"
+            className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60"
           >
             Попробовать снова
           </button>
@@ -78,12 +78,12 @@ export function ForeignRegisterPage() {
 
       {step === 'phone' && (
         <div className="space-y-4">
-          <p className="text-sm text-navy-600">Для иностранцев принимается любой номер как канал связи — просто контакт, без SMS-подтверждения</p>
+          <p className="text-sm text-gray-600">Для иностранцев принимается любой номер как канал связи — просто контакт, без SMS-подтверждения</p>
           <div>
-            <label className="mb-1 block text-xs font-medium text-navy-500">Номер телефона</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" />
           </div>
-          <button type="button" onClick={() => setStep('vehicle')} className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white">
+          <button type="button" onClick={() => setStep('vehicle')} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
             Продолжить
           </button>
         </div>

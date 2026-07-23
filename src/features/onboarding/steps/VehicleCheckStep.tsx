@@ -43,7 +43,7 @@ export function VehicleCheckStep({ identifier, onComplete }: Props) {
     <div className="space-y-4">
       <StepperStatus steps={steps} />
       {failed && (
-        <button type="button" onClick={runCheck} className="w-full rounded-xl border border-navy-300 py-3 font-semibold text-navy-700">
+        <button type="button" onClick={runCheck} className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60">
           Повторить проверку
         </button>
       )}

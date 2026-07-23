@@ -34,7 +34,7 @@ export function GbdUlStep({ bin, onSuccess, onRetry }: Props) {
     <div className="space-y-6">
       <StepperStatus steps={steps} />
       {failed && (
-        <button type="button" onClick={onRetry} className="w-full rounded-xl border border-navy-300 py-3 font-semibold text-navy-700">
+        <button type="button" onClick={onRetry} className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60">
           Ввести БИН заново
         </button>
       )}

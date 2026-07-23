@@ -14,15 +14,15 @@ interface Props {
 export function LimitResultStep({ category, dailyLimitL, priceEligible, onContinue }: Props) {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-navy-100 bg-navy-50 p-4 text-center">
+      <div className="rounded-2xl bg-white p-5 text-center shadow-sm shadow-gray-200/60">
         <CheckCircle2 className="mx-auto h-8 w-8 text-status-ok" />
-        <p className="mt-2 text-sm text-navy-500">Категория ТС: {CATEGORY_LABEL[category]}</p>
-        <p className="mt-1 text-2xl font-bold text-navy-900">{dailyLimitL !== null ? `${dailyLimitL} л/сутки` : 'без лимита'}</p>
-        <p className="mt-1 text-xs text-navy-400">
+        <p className="mt-2 text-sm text-gray-500">Категория ТС: {CATEGORY_LABEL[category]}</p>
+        <p className="mt-1 text-2xl font-bold text-gray-900">{dailyLimitL !== null ? `${dailyLimitL} л/сутки` : 'без лимита'}</p>
+        <p className="mt-1 text-xs text-gray-400">
           {priceEligible ? 'Льготная цена в пределах суточного лимита' : 'Льготный лимит не применяется — отпуск по предельной цене'}
         </p>
       </div>
-      <button type="button" onClick={onContinue} className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white">
+      <button type="button" onClick={onContinue} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
         Выпустить карту
       </button>
     </div>

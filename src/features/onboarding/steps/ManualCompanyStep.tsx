@@ -20,23 +20,23 @@ export function ManualCompanyStep({ onSubmit }: { onSubmit: (values: ManualCompa
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <p className="text-xs text-navy-400">Компания-нерезидент — без проверки в ГБД ЮЛ, данные вводятся вручную</p>
+      <p className="text-xs text-gray-400">Компания-нерезидент — без проверки в ГБД ЮЛ, данные вводятся вручную</p>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">Наименование компании</label>
-        <input {...register('name')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="ООО «Компания»" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">Наименование компании</label>
+        <input {...register('name')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="ООО «Компания»" />
         {errors.name && <p className="mt-1 text-xs text-status-blocked">{errors.name.message}</p>}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">Регистрационный номер</label>
-        <input {...register('registrationNumber')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="RU-7743012345" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">Регистрационный номер</label>
+        <input {...register('registrationNumber')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="RU-7743012345" />
         {errors.registrationNumber && <p className="mt-1 text-xs text-status-blocked">{errors.registrationNumber.message}</p>}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-navy-500">Номер телефона</label>
-        <input {...register('phone')} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" placeholder="+74951234567" />
+        <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
+        <input {...register('phone')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="+74951234567" />
         {errors.phone && <p className="mt-1 text-xs text-status-blocked">{errors.phone.message}</p>}
       </div>
-      <button type="submit" className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white">
+      <button type="submit" className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
         Продолжить
       </button>
     </form>

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { TransactionRow } from '@/components/ui/TransactionRow';
 import { FilterBar, type FilterDef } from '@/components/ui/FilterBar';
 import { useUserStore } from '@/store/user.store';
@@ -13,7 +12,6 @@ type Period = 'all' | '7d' | '30d';
 
 /** S-23/S-25 — история заправок с фильтрами (период, карта/ТС, АЗС, вид топлива) — ФЛ и ЮЛ (ТЗ 5.1/5.2). */
 export function TransactionHistoryPage() {
-  const navigate = useNavigate();
   const currentUserId = useUserStore((s) => s.currentUserId);
   const currentCompanyId = useUserStore((s) => s.currentCompanyId);
   const vehicles = useUserStore((s) => s.vehicles);
@@ -114,25 +112,23 @@ export function TransactionHistoryPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={() => navigate('/cabinet')} className="text-sm text-navy-500">
-          ← Кабинет
-        </button>
-      </div>
-      <h1 className="text-lg font-bold text-navy-900">История заправок</h1>
+      <h1 className="text-lg font-bold text-gray-900">История заправок</h1>
 
       <FilterBar filters={filters} />
 
-      <div className="space-y-2">
-        {filtered.map((t) => {
-          const card = myCards.find((c) => c.id === t.cardId);
-          const vehicle = card?.vehicleId ? companyVehicles.find((v) => v.id === card.vehicleId) : undefined;
-          const driver = vehicle?.driverId ? companyDrivers.find((d) => d.id === vehicle.driverId) : undefined;
-          const label = vehicle ? `${vehicle.grnz}${driver ? ` · ${driver.fio}` : ''}` : card ? CARD_TYPE_LABEL[card.cardType] : '';
-          return <TransactionRow key={t.id} transaction={t} cardLabel={label} />;
-        })}
-        {filtered.length === 0 && <p className="text-sm text-navy-400">Нет заправок по выбранным фильтрам.</p>}
-      </div>
+      {filtered.length > 0 ? (
+        <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-sm shadow-gray-200/60">
+          {filtered.map((t) => {
+            const card = myCards.find((c) => c.id === t.cardId);
+            const vehicle = card?.vehicleId ? companyVehicles.find((v) => v.id === card.vehicleId) : undefined;
+            const driver = vehicle?.driverId ? companyDrivers.find((d) => d.id === vehicle.driverId) : undefined;
+            const label = vehicle ? `${vehicle.grnz}${driver ? ` · ${driver.fio}` : ''}` : card ? CARD_TYPE_LABEL[card.cardType] : '';
+            return <TransactionRow key={t.id} transaction={t} cardLabel={label} />;
+          })}
+        </div>
+      ) : (
+        <p className="rounded-2xl bg-white p-4 text-center text-sm text-gray-400 shadow-sm shadow-gray-200/60">Нет заправок по выбранным фильтрам.</p>
+      )}
     </div>
   );
 }

@@ -43,22 +43,22 @@ export function EgovBvuRegisterPage() {
     <WizardShell title="Регистрация · Через eGov / банковское приложение" stepIndex={stepIndex} stepCount={STEP_ORDER.length} onBack={() => navigate('/')}>
       {step === 'identity' && (
         <div className="space-y-6">
-          <div className="rounded-xl border border-navy-100 bg-navy-50 p-4">
+          <div className="rounded-2xl bg-white p-4 shadow-sm shadow-gray-200/60">
             <div className="flex items-center gap-2 text-status-ok">
               <CheckCircle2 className="h-5 w-5" />
               <span className="text-sm font-medium">Данные подтверждены каналом</span>
             </div>
-            <dl className="mt-3 space-y-1 text-sm text-navy-700">
+            <dl className="mt-3 space-y-1 text-sm text-gray-700">
               <div className="flex justify-between">
-                <dt className="text-navy-400">ФИО</dt>
+                <dt className="text-gray-400">ФИО</dt>
                 <dd>{identity.fio}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-navy-400">ИИН</dt>
+                <dt className="text-gray-400">ИИН</dt>
                 <dd>{maskIdentifier(identity.iin)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-navy-400">Телефон</dt>
+                <dt className="text-gray-400">Телефон</dt>
                 <dd>{identity.phone}</dd>
               </div>
             </dl>
@@ -67,18 +67,18 @@ export function EgovBvuRegisterPage() {
             type="button"
             disabled={!consentChecked}
             onClick={() => setStep('vehicle')}
-            className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white disabled:opacity-40"
+            className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40 disabled:shadow-none"
           >
             Продолжить
           </button>
-          <label className="flex items-start gap-3 rounded-xl border border-navy-100 p-3">
+          <label className="flex items-start gap-3 rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
             <input
               type="checkbox"
               checked={consentChecked}
               onChange={(e) => setConsentChecked(e.target.checked)}
               className="mt-0.5 h-5 w-5 accent-navy-600"
             />
-            <span className="text-sm text-navy-700">Я согласен(на) на обработку персональных данных в системе учёта отпуска ГСМ</span>
+            <span className="text-sm text-gray-700">Я согласен(на) на обработку персональных данных в системе учёта отпуска ГСМ</span>
           </label>
         </div>
       )}

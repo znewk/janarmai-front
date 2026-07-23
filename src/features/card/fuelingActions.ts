@@ -11,6 +11,20 @@ export interface FuelingResult {
   warningThresholdReached: boolean;
 }
 
+const AUTO_FUEL_TYPES: FuelType[] = ['ai92', 'ai95', 'dt'];
+
+/**
+ * Автоподбор параметров демо-заправки (объём/топливо) для сценария «показал QR — АЗС сама
+ * отпустила топливо» (по запросу ПМ убрана ручная форма выбора S-19). Объём считается от
+ * остатка суточного лимита, чтобы демо правдоподобно попадало то в льготную, то в предельную цену.
+ */
+export function pickAutoFuelParams(card: Card): { fuelType: FuelType; volumeL: number } {
+  const suggestedVolumeL = card.dailyLimitL !== null ? Math.max(Math.round(card.dailyLimitL * 0.4), 5) : 40;
+  const volumeL = Math.max(1, Math.round(suggestedVolumeL * (0.85 + Math.random() * 0.3)));
+  const fuelType = AUTO_FUEL_TYPES[Math.floor(Math.random() * AUTO_FUEL_TYPES.length)];
+  return { fuelType, volumeL };
+}
+
 /**
  * Завершение демо-симуляции заправки (S-20 → S-21, ТЗ 5.0):
  * если объём укладывается в остаток льготного лимита — вся транзакция по льготной цене,

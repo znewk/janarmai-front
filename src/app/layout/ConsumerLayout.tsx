@@ -3,9 +3,9 @@ import { ToastViewport } from '@/components/ui/ToastNotification';
 import { resetDemoData } from '@/store';
 
 /**
- * Layout потребительского модуля — mobile-first (ТЗ раздел 8, тех.план раздел 8):
+ * Layout онбординга/входа — mobile-first (ТЗ раздел 8, тех.план раздел 8):
  * базовая раскладка проектируется под ~375–428px (контейнер зафиксирован в 428px — верхняя граница диапазона),
- * на десктопе — тот же контейнер по центру.
+ * на десктопе — тот же контейнер по центру. «Залогиненная» часть приложения использует `AppShellLayout` с табами.
  */
 export function ConsumerLayout() {
   const navigate = useNavigate();
@@ -16,13 +16,13 @@ export function ConsumerLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-50">
-      <div className="relative mx-auto flex min-h-screen w-full max-w-[428px] flex-col bg-white shadow-sm">
+    <div className="min-h-screen bg-gray-100">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-[428px] flex-col bg-gray-50">
         <div className="flex-1">
           <Outlet />
         </div>
-        <footer className="border-t border-navy-100 p-3 text-center">
-          <button type="button" onClick={handleReset} className="text-xs text-navy-300 hover:text-navy-500">
+        <footer className="border-t border-gray-200 p-3 text-center">
+          <button type="button" onClick={handleReset} className="text-xs text-gray-400 hover:text-gray-600">
             Сбросить демо-данные
           </button>
         </footer>

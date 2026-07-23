@@ -14,7 +14,7 @@ export function FilterBar({ filters }: { filters: FilterDef[] }) {
           key={filter.label}
           value={filter.value}
           onChange={(e) => filter.onChange(e.target.value)}
-          className="shrink-0 rounded-lg border border-navy-200 bg-white px-2 py-1.5 text-xs text-navy-700"
+          className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm shadow-gray-200/60"
           aria-label={filter.label}
         >
           {filter.options.map((opt) => (

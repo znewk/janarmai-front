@@ -16,15 +16,15 @@ const CIRCLE_CLASS_BY_VARIANT: Record<ToastVariant, string> = {
 function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const Icon = ICON_BY_VARIANT[toast.variant];
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-navy-100 bg-white p-3 shadow-lg">
+    <div className="flex items-start gap-3 rounded-2xl bg-white p-3.5 shadow-lg shadow-gray-300/40">
       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${CIRCLE_CLASS_BY_VARIANT[toast.variant]}`}>
         <Icon className="h-4 w-4 text-white" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-navy-900">{toast.message}</p>
-        {toast.description && <p className="text-xs text-navy-400">{toast.description}</p>}
+        <p className="text-sm font-medium text-gray-900">{toast.message}</p>
+        {toast.description && <p className="text-xs text-gray-400">{toast.description}</p>}
       </div>
-      <button type="button" onClick={onDismiss} aria-label="Закрыть" className="text-navy-300 hover:text-navy-500">
+      <button type="button" onClick={onDismiss} aria-label="Закрыть" className="text-gray-300 hover:text-gray-500">
         <X className="h-4 w-4" />
       </button>
     </div>

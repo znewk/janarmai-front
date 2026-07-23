@@ -55,9 +55,9 @@ export function OtpInput({ length = 6, value, onChange, error = false, disabled 
           disabled={disabled}
           onChange={handleChange(index)}
           onKeyDown={handleKeyDown(index)}
-          className={`h-12 w-10 rounded-lg border text-center text-lg font-semibold text-navy-900 outline-none focus:border-navy-500 ${
-            error ? 'border-status-blocked' : 'border-navy-200'
-          } ${disabled ? 'bg-navy-50' : 'bg-white'}`}
+          className={`h-12 w-10 rounded-xl border text-center text-lg font-semibold text-gray-900 outline-none focus:border-navy-500 ${
+            error ? 'border-status-blocked' : 'border-gray-200'
+          } ${disabled ? 'bg-gray-50' : 'bg-white'}`}
         />
       ))}
     </div>

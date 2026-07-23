@@ -65,7 +65,7 @@ export function CompanyForeignRegisterPage() {
 
       {step === 'passport' && (
         <div className="space-y-4">
-          <p className="text-xs text-navy-400">Верификация директора/представителя как иностранца</p>
+          <p className="text-xs text-gray-400">Верификация директора/представителя как иностранца</p>
           <PassportLivenessStep passportNumber={passportNumber} onPassportNumberChange={setPassportNumber} onComplete={() => setStep('berkut')} />
         </div>
       )}
@@ -84,15 +84,15 @@ export function CompanyForeignRegisterPage() {
       {step === 'rejected' && (
         <div className="space-y-6 text-center">
           <XCircle className="mx-auto h-12 w-12 text-status-blocked" />
-          <p className="text-lg font-bold text-navy-900">Отказ в регистрации</p>
-          <p className="text-sm text-navy-500">{rejectReason}</p>
+          <p className="text-lg font-bold text-gray-900">Отказ в регистрации</p>
+          <p className="text-sm text-gray-500">{rejectReason}</p>
           <button
             type="button"
             onClick={() => {
               setPassportNumber('');
               setStep('passport');
             }}
-            className="w-full rounded-xl border border-navy-300 py-3 font-semibold text-navy-700"
+            className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60"
           >
             Попробовать снова
           </button>
