@@ -14,7 +14,10 @@ function bucketColor(value: number, min: number, max: number): string {
   return chartSequentialNavy[index];
 }
 
-/** A-04 — интерактивная тепловая карта областей РК: заливка по индексу потребления, акцент на приграничные аномалии (ТЗ 6, 8.5). */
+/**
+ * A-04 — интерактивная тепловая карта областей РК: заливка по индексу потребления, акцент на приграничные аномалии (ТЗ 6, 8.5).
+ * Границы: geokz (github.com/arodionoff/geokz, CC BY 4.0), на основе UN OCHA COD-AB Kazakhstan, актуализация 2024 г. (20 регионов).
+ */
 export function KzHeatMap({ data }: KzHeatMapProps) {
   const [hovered, setHovered] = useState<RegionConsumptionPoint | null>(null);
   const byName = new Map(data.map((r) => [r.name, r]));
