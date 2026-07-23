@@ -16,7 +16,8 @@
     "smoke:cabinet": "tsx --tsconfig tsconfig.app.json scripts/smoke-cabinet.ts",
     "smoke:analytics": "tsx --tsconfig tsconfig.app.json scripts/smoke-analytics.ts",
     "smoke:reset": "tsx --tsconfig tsconfig.app.json scripts/smoke-reset.ts",
-    "smoke:all": "npm run smoke:mocks && npm run smoke:persist && npm run smoke:registration && npm run smoke:auth && npm run smoke:fueling && npm run smoke:cabinet && npm run smoke:analytics && npm run smoke:reset"
+    "smoke:heatmap": "tsx --tsconfig tsconfig.app.json scripts/smoke-heatmap-projection.ts",
+    "smoke:all": "npm run smoke:mocks && npm run smoke:persist && npm run smoke:registration && npm run smoke:auth && npm run smoke:fueling && npm run smoke:cabinet && npm run smoke:analytics && npm run smoke:reset && npm run smoke:heatmap"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
