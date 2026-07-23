@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import { geoMercator } from 'd3-geo';
 import type { RegionConsumptionPoint } from '@/mocks/seed';
@@ -8,6 +8,10 @@ import kzGeo from '@/mocks/geo/kz-oblasts.json';
 export interface KzHeatMapProps {
   data: RegionConsumptionPoint[];
 }
+
+const MAP_WIDTH = 800;
+const MAP_HEIGHT = 480;
+const MAP_PADDING = 16;
 
 function bucketColor(value: number, min: number, max: number): string {
   const ratio = max > min ? (value - min) / (max - min) : 0;
@@ -20,15 +24,26 @@ function bucketColor(value: number, min: number, max: number): string {
  * вместо подобранных вручную center/scale, которые не проверялись визуально и оказались завышены
  * (карта «зумилась» внутрь одного региона, см. PROGRESS.md). fitExtent пересчитывает масштаб
  * из реального bounding box геоданных, поэтому не ломается при смене источника геоданных.
+ *
+ * ВАЖНО: `ComposableMap.projection` в установленной версии react-simple-maps (3.x), несмотря на
+ * заявленный в @types/react-simple-maps тип `(width, height, config) => GeoProjection`, при передаче
+ * функции использует её КАК ГОТОВЫЙ d3-проекции объект, а не вызывает как фабрику (см. makeProjection
+ * в dist/index.es.js: `if (typeof projection === 'function') return projection`). Поэтому проекция
+ * вычисляется здесь заранее (готовый d3-объект), а не передаётся функцией-фабрикой — иначе рантайм
+ * пытается вызвать САМ ГОТОВЫЙ ОБЪЕКТ ПРОЕКЦИИ как точку (x=[lon,lat], y=undefined), что приводит
+ * к `TypeError: r is not a function` при рендере (баг проявился только в браузере, см. PROGRESS.md).
  */
-function fitKzProjection(width: number, height: number) {
-  const padding = 16;
-  return geoMercator().fitExtent(
-    [
-      [padding, padding],
-      [width - padding, height - padding],
-    ],
-    kzGeo as unknown as Parameters<ReturnType<typeof geoMercator>['fitExtent']>[1],
+function useKzProjection() {
+  return useMemo(
+    () =>
+      geoMercator().fitExtent(
+        [
+          [MAP_PADDING, MAP_PADDING],
+          [MAP_WIDTH - MAP_PADDING, MAP_HEIGHT - MAP_PADDING],
+        ],
+        kzGeo as unknown as Parameters<ReturnType<typeof geoMercator>['fitExtent']>[1],
+      ),
+    [],
   );
 }
 
@@ -42,11 +57,14 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
   const values = data.map((r) => r.consumptionIndex);
   const min = Math.min(...values);
   const max = Math.max(...values);
+  const projection = useKzProjection();
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr]">
       <div className="rounded-xl border border-navy-100 bg-white p-2">
-        <ComposableMap projection={fitKzProjection} width={800} height={480} style={{ width: '100%', height: 'auto' }}>
+        {/* @types/react-simple-maps типизирует `projection` как фабрику (width,height,config)=>GeoProjection,
+            но рантайм этой версии ожидает готовый d3-объект проекции при передаче функции (см. useKzProjection) — cast намеренный. */}
+        <ComposableMap projection={projection as never} width={MAP_WIDTH} height={MAP_HEIGHT} style={{ width: '100%', height: 'auto' }}>
           <Geographies geography={kzGeo}>
             {({ geographies }) =>
               geographies.map((geo) => {

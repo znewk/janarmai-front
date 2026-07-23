@@ -59,6 +59,20 @@ function run() {
   if (minX < 0 || minY < 0 || maxX > WIDTH || maxY > HEIGHT) throw new Error('FAIL: часть страны обрезана за пределами viewBox');
 
   console.log('\nВСЯ СТРАНА ПОМЕЩАЕТСЯ В ХОЛСТ БЕЗ ОБРЕЗКИ И БЕЗ ВЫРОЖДЕННЫХ РЕГИОНОВ — ПРОЕКЦИЯ КОРРЕКТНА.');
+
+  console.log('\n=== Проверка соглашения о вызове react-simple-maps (makeProjection) ===');
+  // react-simple-maps (dist/index.es.js, makeProjection): `if (typeof projection === 'function') return projection;`
+  // — функция, переданная в проп `projection`, НЕ вызывается с (width, height, config) как фабрика,
+  // а используется как есть, то есть должна САМА БЫТЬ d3-объектом проекции (point) => [x, y].
+  // Именно это и стало причиной браузерного бага «TypeError: r is not a function»: KzHeatMap.tsx
+  // раньше передавал фабрику `(width, height) => GeoProjection`, которую react-simple-maps
+  // пытался вызвать как `proj([lon, lat])`, получая мусорный аргумент вместо (width, height).
+  const point = path.projection()([lonMin + (lonMax - lonMin) / 2, latMin + (latMax - latMin) / 2]);
+  console.log('projection([центр Казахстана]) ->', point);
+  if (!Array.isArray(point) || point.length !== 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1])) {
+    throw new Error('FAIL: объект проекции при прямом вызове с точкой [lon,lat] должен вернуть [x,y] — именно так его использует react-simple-maps');
+  }
+  console.log('Объект проекции корректно ведёт себя как (point) => [x,y] — так, как его использует react-simple-maps.');
 }
 
 run();
