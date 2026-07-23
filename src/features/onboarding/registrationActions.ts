@@ -16,7 +16,12 @@ interface FlRegistrationParams {
   vehicle?: { grnz: string; category: VehicleCategory };
 }
 
-/** Завершение регистрации ФЛ (все 3 ветки: eGov/БВУ, КМГ-резидент, КМГ-иностранец) — S-10. */
+/**
+ * Завершение регистрации ФЛ (все 3 ветки: eGov/БВУ, КМГ-резидент, КМГ-иностранец).
+ * Сразу устанавливает сессию (автологин) — по обновлённому ТЗ пользователь после регистрации
+ * попадает прямо на экран карты (`/card`) без промежуточного экрана «Выпуск карты», а этот экран
+ * требует активной сессии, чтобы показать выпущенные карты.
+ */
 export function finalizeFlRegistration(params: FlRegistrationParams): { userId: string; cards: Card[] } {
   const userId = generateId('user');
   useUserStore.getState().registerUser({
@@ -60,6 +65,7 @@ export function finalizeFlRegistration(params: FlRegistrationParams): { userId: 
     cards.push(card);
   }
 
+  useUserStore.getState().login(userId);
   return { userId, cards };
 }
 
@@ -74,7 +80,11 @@ interface UlRegistrationParams {
   vehicles: { grnz: string; category: VehicleCategory; driverFio?: string; driverIin?: string }[];
 }
 
-/** Завершение регистрации ЮЛ (резидент/нерезидент) — S-10, автопарк S-13/S-14. */
+/**
+ * Завершение регистрации ЮЛ (резидент/нерезидент), автопарк S-13/S-14.
+ * Сразу устанавливает сессию (автологин директора + компании) — по обновлённому ТЗ пользователь
+ * после регистрации попадает прямо в кабинет ЮЛ (`/cabinet`) без промежуточного экрана «Выпуск карты».
+ */
 export function finalizeUlRegistration(params: UlRegistrationParams): { companyId: string; cards: Card[] } {
   const directorId = generateId('user');
   useUserStore.getState().registerUser({
@@ -127,5 +137,6 @@ export function finalizeUlRegistration(params: UlRegistrationParams): { companyI
     cards.push(card);
   }
 
+  useUserStore.getState().login(directorId, companyId);
   return { companyId, cards };
 }

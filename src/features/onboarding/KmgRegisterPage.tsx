@@ -5,25 +5,24 @@ import { WizardShell } from './steps/WizardShell';
 import { ChannelCard } from '@/components/ui/ChannelCard';
 import { IinPhoneFormStep, type IinPhoneFormValues } from './steps/IinPhoneFormStep';
 import { GbdFlBmgStep } from './steps/GbdFlBmgStep';
-import { SmsStep } from './steps/SmsStep';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
 import { LimitResultStep } from './steps/LimitResultStep';
-import { CardIssueStep } from './steps/CardIssueStep';
-import type { Card } from '@/types/entities';
 import { deriveFlCardSpecs } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
 
 type UserTypeChoice = 'fl_resident' | 'fl_foreign' | 'ul_resident' | 'ul_nonresident';
-type Step = 'type' | 'iin-phone' | 'gbd-bmg' | 'sms' | 'vehicle' | 'result' | 'card';
-const STEP_ORDER: Step[] = ['type', 'iin-phone', 'gbd-bmg', 'sms', 'vehicle', 'result', 'card'];
+type Step = 'type' | 'iin-phone' | 'gbd-bmg' | 'vehicle' | 'result';
+const STEP_ORDER: Step[] = ['type', 'iin-phone', 'gbd-bmg', 'vehicle', 'result'];
 
-/** S-03 — выбор типа лица (путь КМГ, ТЗ 4.2–4.5) + полный путь ФЛ-резидента инлайн (4.2). */
+/**
+ * S-03 — выбор типа лица (путь КМГ, ТЗ 4.2–4.5) + полный путь ФЛ-резидента инлайн (4.2).
+ * Согласие на ПД уже получено на S-00; SMS-подтверждение убрано из регистрации — телефон вводится как контакт.
+ */
 export function KmgRegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('type');
   const [identity, setIdentity] = useState<IinPhoneFormValues | null>(null);
   const [vehicleResult, setVehicleResult] = useState<VehicleCheckResult | null>(null);
-  const [issuedCards, setIssuedCards] = useState<Card[]>([]);
 
   const stepIndex = STEP_ORDER.indexOf(step);
 
@@ -36,7 +35,7 @@ export function KmgRegisterPage() {
 
   const handleIssueCard = () => {
     if (!identity) return;
-    const { cards } = finalizeFlRegistration({
+    finalizeFlRegistration({
       residency: 'resident',
       fio: identity.fio,
       phone: identity.phone,
@@ -44,8 +43,7 @@ export function KmgRegisterPage() {
       iin: identity.iin,
       vehicle: vehicleResult?.vehicle,
     });
-    setIssuedCards(cards);
-    setStep('card');
+    navigate('/card', { state: { justIssued: true } });
   };
 
   return (
@@ -75,10 +73,8 @@ export function KmgRegisterPage() {
       )}
 
       {step === 'gbd-bmg' && identity && (
-        <GbdFlBmgStep iin={identity.iin} fio={identity.fio} phone={identity.phone} onSuccess={() => setStep('sms')} onRetry={() => setStep('iin-phone')} />
+        <GbdFlBmgStep iin={identity.iin} fio={identity.fio} phone={identity.phone} onSuccess={() => setStep('vehicle')} onRetry={() => setStep('iin-phone')} />
       )}
-
-      {step === 'sms' && identity && <SmsStep phone={identity.phone} onVerified={() => setStep('vehicle')} />}
 
       {step === 'vehicle' && identity && (
         <VehicleCheckStep
@@ -96,10 +92,6 @@ export function KmgRegisterPage() {
           const spec = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicle ? [vehicleResult.category] : [] })[0];
           return <LimitResultStep category={vehicleResult.category} dailyLimitL={spec.dailyLimitL} priceEligible={spec.priceEligible} onContinue={handleIssueCard} />;
         })()}
-
-      {step === 'card' && identity && (
-        <CardIssueStep holderName={identity.fio} cards={issuedCards} onContinue={() => navigate('/cabinet')} />
-      )}
     </WizardShell>
   );
 }

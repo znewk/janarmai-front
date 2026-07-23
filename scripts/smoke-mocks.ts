@@ -1,4 +1,4 @@
-import { checkGbdFl, checkBmg, sendSmsCode, verifySmsCode, checkBerkut, checkVehicleRegistry, checkGbdUl, checkAdminCredentials } from '../src/mocks/api';
+import { checkGbdFl, checkBmg, sendSmsCode, verifySmsCode, checkBerkut, checkMvdRegistry, checkGbdUl, checkAdminCredentials } from '../src/mocks/api';
 
 async function run() {
   const started = Date.now();
@@ -9,11 +9,13 @@ async function run() {
   console.log('verifySmsCode wrong:', await verifySmsCode('9999'));
   console.log('verifySmsCode correct:', await verifySmsCode('1234'));
   console.log('checkBerkut duplicate:', await checkBerkut({ passportNumber: 'DUP12345' }));
-  console.log('checkVehicleRegistry error:', await checkVehicleRegistry('ERR001'));
+  console.log('checkMvdRegistry error (6):', await checkMvdRegistry('900101300126'));
+  console.log('checkMvdRegistry passenger:', await checkMvdRegistry('900101300124'));
+  console.log('checkMvdRegistry no vehicle, insured:', await checkMvdRegistry('900101300120'));
   console.log('checkGbdUl success:', await checkGbdUl('123456789012'));
   console.log('checkAdminCredentials success:', await checkAdminCredentials('kmg.analyst', 'demo1234'));
   console.log('checkAdminCredentials error:', await checkAdminCredentials('kmg.analyst', 'wrong'));
-  console.log(`\nTotal elapsed ${Date.now() - started}ms for 11 sequential calls (искусственная задержка 300-1500мс каждая)`);
+  console.log(`\nTotal elapsed ${Date.now() - started}ms for 13 sequential calls (искусственная задержка 300-1500мс каждая)`);
 }
 
 run();

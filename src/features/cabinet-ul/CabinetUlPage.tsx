@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle2, Trash2, X } from 'lucide-react';
 import type { VehicleCategory } from '@/types/entities';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
 import { useUserStore } from '@/store/user.store';
@@ -14,6 +14,7 @@ const CATEGORY_LABEL: Record<VehicleCategory, string> = { passenger: 'легко
 /** S-24 — кабинет ЮЛ: сводная таблица автопарка + S-26 управление ТС/водителями + S-27 экспорт отчёта (ТЗ 5.2). */
 export function CabinetUlPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const currentCompanyId = useUserStore((s) => s.currentCompanyId);
   const companies = useUserStore((s) => s.companies);
   const allVehicles = useUserStore((s) => s.vehicles);
@@ -22,6 +23,7 @@ export function CabinetUlPage() {
   const cards = useCardStore((s) => s.cards);
   const transactions = useTransactionStore((s) => s.transactions);
 
+  const [showIssuedBanner, setShowIssuedBanner] = useState(() => Boolean((location.state as { justIssued?: boolean } | null)?.justIssued));
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [newGrnz, setNewGrnz] = useState('');
   const [newCategory, setNewCategory] = useState<VehicleCategory>('passenger');
@@ -77,6 +79,19 @@ export function CabinetUlPage() {
 
   return (
     <div className="space-y-6 p-4">
+      {showIssuedBanner && (
+        <div className="flex items-start gap-3 rounded-xl border border-status-ok bg-navy-50 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-status-ok" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-navy-900">Карты успешно выпущены</p>
+            <p className="text-xs text-navy-500">По каждому ТС автопарка выпущена отдельная карта — остаток лимита виден ниже.</p>
+          </div>
+          <button type="button" onClick={() => setShowIssuedBanner(false)} aria-label="Закрыть" className="text-navy-300 hover:text-navy-500">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs text-navy-400">Кабинет ЮЛ</p>

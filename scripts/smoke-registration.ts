@@ -17,12 +17,25 @@ async function run() {
   const { finalizeFlRegistration, finalizeUlRegistration } = await import('../src/features/onboarding/registrationActions');
   const { useUserStore } = await import('../src/store/user.store');
   const { useCardStore } = await import('../src/store/card.store');
-  const { checkGbdFl, checkBmg, checkBerkut, checkGbdUl } = await import('../src/mocks/api');
+  const { checkGbdFl, checkBmg, checkBerkut, checkGbdUl, checkMvdRegistry } = await import('../src/mocks/api');
 
-  console.log('=== Ветка 1: ФЛ-резидент eGov/БВУ (легковая) ===');
+  console.log('=== Единый запрос к базе МВД (замена ИС «Автомобиль» + ОГПО, правки ПМ) ===');
+  const mvdErr = await checkMvdRegistry('900101300126');
+  console.log('checkMvdRegistry(ИИН на 6) ->', mvdErr.status, mvdErr.status === 'error' ? mvdErr.errorCode : '');
+  if (mvdErr.status !== 'error' || mvdErr.errorCode !== 'MVD_CHECK_FAILED') throw new Error('FAIL: ожидалась ошибка MVD_CHECK_FAILED');
+  const mvdNoVehicle = await checkMvdRegistry('900101300120');
+  console.log('checkMvdRegistry(ИИН на 0, нет ТС) ->', mvdNoVehicle.status, mvdNoVehicle.status === 'success' ? mvdNoVehicle.data : '');
+  if (mvdNoVehicle.status !== 'success' || mvdNoVehicle.data.vehicle !== null || !mvdNoVehicle.data.insured) throw new Error('FAIL: ожидалось «нет ТС, есть ОГПО»');
+  const mvdPassenger = await checkMvdRegistry('900101300124');
+  console.log('checkMvdRegistry(ИИН на 4, легковая) ->', mvdPassenger.status, mvdPassenger.status === 'success' ? mvdPassenger.data : '');
+  if (mvdPassenger.status !== 'success' || mvdPassenger.data.vehicle?.category !== 'passenger') throw new Error('FAIL: ожидалась легковая на пользователе');
+
+  console.log('\n=== Ветка 1: ФЛ-резидент eGov/БВУ (легковая) ===');
   const r1 = finalizeFlRegistration({ residency: 'resident', fio: 'Демо Тест1', phone: '+77011111111', channel: 'egov', iin: '900101300121', vehicle: { grnz: '001AAA02', category: 'passenger' } });
   console.log('карт:', r1.cards.length, r1.cards.map((c) => `${c.cardType}:${c.dailyLimitL}л`));
   if (r1.cards.length !== 1 || r1.cards[0].dailyLimitL !== 100) throw new Error('FAIL: ожидалась 1 карта 100л');
+  console.log('автологин после регистрации (правки ПМ, п.5):', useUserStore.getState().currentUserId === r1.userId);
+  if (useUserStore.getState().currentUserId !== r1.userId) throw new Error('FAIL: регистрация должна сразу устанавливать сессию — иначе /card покажет «нет активной сессии»');
 
   console.log('\n=== Ветка 2: ФЛ-резидент КМГ (грузовая, полный путь + негативный сценарий) ===');
   const gbdErr = await checkGbdFl({ iin: '900101300129', fio: 'X' });
@@ -61,6 +74,8 @@ async function run() {
   });
   console.log('карт:', r4.cards.length, r4.cards.map((c) => `${c.cardType}:${c.dailyLimitL}л:priceEligible=${c.priceEligible}`));
   if (r4.cards.length !== 2 || !r4.cards.every((c) => c.priceEligible)) throw new Error('FAIL: ожидалось 2 карты с льготой');
+  console.log('автологин ЮЛ после регистрации (currentCompanyId):', useUserStore.getState().currentCompanyId === r4.companyId);
+  if (useUserStore.getState().currentCompanyId !== r4.companyId) throw new Error('FAIL: регистрация ЮЛ должна сразу устанавливать сессию компании — иначе /cabinet покажет «нет активной сессии»');
 
   console.log('\n=== Ветка 5: ЮЛ-нерезидент (без льготной цены) ===');
   const r5 = finalizeUlRegistration({

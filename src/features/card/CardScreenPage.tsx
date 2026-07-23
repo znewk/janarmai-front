@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle2, X } from 'lucide-react';
 import type { FuelType } from '@/types/entities';
 import { CardMunai } from '@/components/ui/CardMunai';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
@@ -20,6 +21,7 @@ type SimStep = 'idle' | 'params' | 'processing';
 /** S-18 — экран карты: QR, остаток лимита, кнопка «Симулировать заправку» (ТЗ 5.0, 8.2, 8.3). */
 export function CardScreenPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const currentUserId = useUserStore((s) => s.currentUserId);
   const currentCompanyId = useUserStore((s) => s.currentCompanyId);
   const users = useUserStore((s) => s.users);
@@ -31,6 +33,7 @@ export function CardScreenPage() {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [simStep, setSimStep] = useState<SimStep>('idle');
   const [fuelingParams, setFuelingParams] = useState<{ fuelType: FuelType; volumeL: number } | null>(null);
+  const [showIssuedBanner, setShowIssuedBanner] = useState(() => Boolean((location.state as { justIssued?: boolean } | null)?.justIssued));
 
   const user = users.find((u) => u.id === currentUserId);
   const company = companies.find((c) => c.id === currentCompanyId);
@@ -89,6 +92,21 @@ export function CardScreenPage() {
 
   return (
     <div className="space-y-5 p-4">
+      {showIssuedBanner && (
+        <div className="flex items-start gap-3 rounded-xl border border-status-ok bg-navy-50 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-status-ok" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-navy-900">Карта успешно выпущена</p>
+            <button type="button" onClick={() => navigate('/cabinet')} className="mt-2 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white">
+              Перейти в кабинет
+            </button>
+          </div>
+          <button type="button" onClick={() => setShowIssuedBanner(false)} aria-label="Закрыть" className="text-navy-300 hover:text-navy-500">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {myCards.length > 1 && (
         <div className="flex gap-2 overflow-x-auto">
           {myCards.map((c) => (

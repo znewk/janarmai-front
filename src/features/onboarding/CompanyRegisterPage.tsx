@@ -1,31 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Card } from '@/types/entities';
 import { WizardShell } from './steps/WizardShell';
 import { EcpBinStep, type EcpBinFormValues } from './steps/EcpBinStep';
 import { GbdUlStep } from './steps/GbdUlStep';
 import { VehicleFleetStep, type FleetVehicleDraft } from './steps/VehicleFleetStep';
 import { DriverAssignStep, type DriverAssignment } from './steps/DriverAssignStep';
-import { CardIssueStep } from './steps/CardIssueStep';
 import { finalizeUlRegistration } from './registrationActions';
 
-type Step = 'ecp-bin' | 'gbd-ul' | 'fleet' | 'drivers' | 'card';
-const STEP_ORDER: Step[] = ['ecp-bin', 'gbd-ul', 'fleet', 'drivers', 'card'];
+type Step = 'ecp-bin' | 'gbd-ul' | 'fleet' | 'drivers';
+const STEP_ORDER: Step[] = ['ecp-bin', 'gbd-ul', 'fleet', 'drivers'];
 
-/** Ветка ЮЛ-резидент (только приложение КМГ) — S-11..S-14 (ТЗ 4.4). */
+/** Ветка ЮЛ-резидент (только приложение КМГ) — S-11..S-14 (ТЗ 4.4). Согласие на ПД получено на S-00. */
 export function CompanyRegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('ecp-bin');
   const [ecpBin, setEcpBin] = useState<EcpBinFormValues | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [vehicles, setVehicles] = useState<FleetVehicleDraft[]>([]);
-  const [issuedCards, setIssuedCards] = useState<Card[]>([]);
 
   const stepIndex = STEP_ORDER.indexOf(step);
 
   const handleDriversComplete = (assignments: (DriverAssignment | null)[]) => {
     if (!ecpBin) return;
-    const { cards } = finalizeUlRegistration({
+    finalizeUlRegistration({
       residency: 'resident',
       name: companyName,
       bin: ecpBin.bin,
@@ -39,8 +36,7 @@ export function CompanyRegisterPage() {
         driverIin: assignments[i]?.iin,
       })),
     });
-    setIssuedCards(cards);
-    setStep('card');
+    navigate('/cabinet', { state: { justIssued: true } });
   };
 
   return (
@@ -80,10 +76,6 @@ export function CompanyRegisterPage() {
       )}
 
       {step === 'drivers' && <DriverAssignStep vehicles={vehicles} onComplete={handleDriversComplete} />}
-
-      {step === 'card' && (
-        <CardIssueStep holderName={companyName} cards={issuedCards} onContinue={() => navigate('/cabinet')} />
-      )}
     </WizardShell>
   );
 }

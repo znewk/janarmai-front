@@ -7,15 +7,16 @@ import { PassportLivenessStep } from './steps/PassportLivenessStep';
 import { BerkutStep } from './steps/BerkutStep';
 import { VehicleFleetStep, type FleetVehicleDraft } from './steps/VehicleFleetStep';
 import { DriverAssignStep, type DriverAssignment } from './steps/DriverAssignStep';
-import { CardIssueStep } from './steps/CardIssueStep';
-import type { Card } from '@/types/entities';
 import { generateDemoFio } from '@/lib/demoIdentity';
 import { finalizeUlRegistration } from './registrationActions';
 
-type Step = 'company' | 'passport' | 'berkut' | 'rejected' | 'fleet' | 'drivers' | 'card';
-const STEP_ORDER: Step[] = ['company', 'passport', 'berkut', 'fleet', 'drivers', 'card'];
+type Step = 'company' | 'passport' | 'berkut' | 'rejected' | 'fleet' | 'drivers';
+const STEP_ORDER: Step[] = ['company', 'passport', 'berkut', 'fleet', 'drivers'];
 
-/** Ветка ЮЛ-нерезидент — S-11..S-14 по аналогии с ЮЛ-резидентом, верификация директора переиспользует S-06/S-07 (ТЗ 4.5). */
+/**
+ * Ветка ЮЛ-нерезидент — S-11..S-14 по аналогии с ЮЛ-резидентом, верификация директора переиспользует
+ * S-06/S-07 (ТЗ 4.5). Согласие на ПД получено на S-00.
+ */
 export function CompanyForeignRegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('company');
@@ -24,13 +25,12 @@ export function CompanyForeignRegisterPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [directorFio] = useState(() => generateDemoFio());
   const [vehicles, setVehicles] = useState<FleetVehicleDraft[]>([]);
-  const [issuedCards, setIssuedCards] = useState<Card[]>([]);
 
   const stepIndex = STEP_ORDER.indexOf(step === 'rejected' ? 'berkut' : step);
 
   const handleDriversComplete = (assignments: (DriverAssignment | null)[]) => {
     if (!companyInfo) return;
-    const { cards } = finalizeUlRegistration({
+    finalizeUlRegistration({
       residency: 'nonresident',
       name: companyInfo.name,
       registrationNumber: companyInfo.registrationNumber,
@@ -44,8 +44,7 @@ export function CompanyForeignRegisterPage() {
         driverIin: assignments[i]?.iin,
       })),
     });
-    setIssuedCards(cards);
-    setStep('card');
+    navigate('/cabinet', { state: { justIssued: true } });
   };
 
   return (
@@ -110,10 +109,6 @@ export function CompanyForeignRegisterPage() {
       )}
 
       {step === 'drivers' && <DriverAssignStep vehicles={vehicles} onComplete={handleDriversComplete} />}
-
-      {step === 'card' && companyInfo && (
-        <CardIssueStep holderName={companyInfo.name} cards={issuedCards} onContinue={() => navigate('/cabinet')} />
-      )}
     </WizardShell>
   );
 }

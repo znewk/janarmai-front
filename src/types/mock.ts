@@ -7,8 +7,7 @@ export type MockErrorCode =
   | 'SMS_INVALID_CODE'
   | 'BERKUT_DUPLICATE_PASSPORT'
   | 'BERKUT_NOT_FOUND'
-  | 'VEHICLE_NOT_FOUND'
-  | 'OGPO_NOT_INSURED'
+  | 'MVD_CHECK_FAILED'
   | 'GBD_UL_NOT_FOUND'
   | 'ECP_SIGN_FAILED'
   | 'ADMIN_INVALID_CREDENTIALS';
@@ -20,8 +19,7 @@ export const MOCK_ERROR_MESSAGES: Record<MockErrorCode, string> = {
   SMS_INVALID_CODE: 'Неверный код подтверждения',
   BERKUT_DUPLICATE_PASSPORT: 'Обнаружен дубликат паспорта в ИС «Беркут»',
   BERKUT_NOT_FOUND: 'Личность не подтверждена в ИС «Беркут»',
-  VEHICLE_NOT_FOUND: 'ТС не найдено в ИС «Автомобиль»',
-  OGPO_NOT_INSURED: 'Не найдена запись в базе страховок ОГПО',
+  MVD_CHECK_FAILED: 'Не удалось получить данные из базы МВД (ТС/страховка)',
   GBD_UL_NOT_FOUND: 'БИН не найден в ГБД ЮЛ',
   ECP_SIGN_FAILED: 'Не удалось подписать ЭЦП',
   ADMIN_INVALID_CREDENTIALS: 'Неверный логин или пароль',

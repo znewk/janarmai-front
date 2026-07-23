@@ -6,15 +6,13 @@ import { PassportLivenessStep } from './steps/PassportLivenessStep';
 import { BerkutStep } from './steps/BerkutStep';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
 import { LimitResultStep } from './steps/LimitResultStep';
-import { CardIssueStep } from './steps/CardIssueStep';
-import type { Card } from '@/types/entities';
 import { generateDemoFio, generateDemoPhone } from '@/lib/demoIdentity';
 import { finalizeFlRegistration } from './registrationActions';
 
-type Step = 'passport' | 'berkut' | 'rejected' | 'phone' | 'vehicle' | 'result' | 'card';
-const STEP_ORDER: Step[] = ['passport', 'berkut', 'phone', 'vehicle', 'result', 'card'];
+type Step = 'passport' | 'berkut' | 'rejected' | 'phone' | 'vehicle' | 'result';
+const STEP_ORDER: Step[] = ['passport', 'berkut', 'phone', 'vehicle', 'result'];
 
-/** Ветка ФЛ-иностранец (только приложение КМГ) — S-06/S-07 + S-08..S-10 (ТЗ 4.3). */
+/** Ветка ФЛ-иностранец (только приложение КМГ) — S-06/S-07 + S-08/S-09 (ТЗ 4.3). Согласие на ПД получено на S-00. */
 export function ForeignRegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('passport');
@@ -23,12 +21,11 @@ export function ForeignRegisterPage() {
   const [fio] = useState(() => generateDemoFio());
   const [phone, setPhone] = useState(() => generateDemoPhone());
   const [vehicleResult, setVehicleResult] = useState<VehicleCheckResult | null>(null);
-  const [issuedCards, setIssuedCards] = useState<Card[]>([]);
 
   const stepIndex = STEP_ORDER.indexOf(step === 'rejected' ? 'berkut' : step);
 
   const handleIssueCard = () => {
-    const { cards } = finalizeFlRegistration({
+    finalizeFlRegistration({
       residency: 'nonresident',
       fio,
       phone,
@@ -36,8 +33,7 @@ export function ForeignRegisterPage() {
       passportNumber,
       vehicle: vehicleResult?.vehicle,
     });
-    setIssuedCards(cards);
-    setStep('card');
+    navigate('/card', { state: { justIssued: true } });
   };
 
   return (
@@ -82,7 +78,7 @@ export function ForeignRegisterPage() {
 
       {step === 'phone' && (
         <div className="space-y-4">
-          <p className="text-sm text-navy-600">Для иностранцев принимается любой номер как канал связи — отдельная SMS-верификация не требуется</p>
+          <p className="text-sm text-navy-600">Для иностранцев принимается любой номер как канал связи — просто контакт, без SMS-подтверждения</p>
           <div>
             <label className="mb-1 block text-xs font-medium text-navy-500">Номер телефона</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm" />
@@ -106,8 +102,6 @@ export function ForeignRegisterPage() {
       {step === 'result' && vehicleResult && (
         <LimitResultStep category={vehicleResult.category} dailyLimitL={null} priceEligible={false} onContinue={handleIssueCard} />
       )}
-
-      {step === 'card' && <CardIssueStep holderName={fio} cards={issuedCards} onContinue={() => navigate('/cabinet')} />}
     </WizardShell>
   );
 }
