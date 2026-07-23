@@ -14,13 +14,15 @@ const STEP_ORDER: Step[] = ['identity', 'vehicle', 'result'];
 
 /**
  * Быстрый путь резидента через объединённый канал «eGov / банковское приложение» (ТЗ 4.1).
- * Согласие на ПД уже получено на S-00; SMS-подтверждение не требуется — канал уже верифицировал данные.
+ * Согласие на ПД — внизу первого экрана визарда, там, где уже видны конкретные данные пользователя,
+ * подтянутые каналом (не на S-00, где данных ещё нет). SMS-подтверждение не требуется — канал уже верифицировал данные.
  */
 export function EgovBvuRegisterPage() {
   const navigate = useNavigate();
 
   const [identity] = useState(() => ({ fio: generateDemoFio(), iin: generateDemoIin(), phone: generateDemoPhone() }));
   const [step, setStep] = useState<Step>('identity');
+  const [consentChecked, setConsentChecked] = useState(false);
   const [vehicleResult, setVehicleResult] = useState<VehicleCheckResult | null>(null);
 
   const stepIndex = STEP_ORDER.indexOf(step);
@@ -61,9 +63,23 @@ export function EgovBvuRegisterPage() {
               </div>
             </dl>
           </div>
-          <button type="button" onClick={() => setStep('vehicle')} className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white">
+          <button
+            type="button"
+            disabled={!consentChecked}
+            onClick={() => setStep('vehicle')}
+            className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white disabled:opacity-40"
+          >
             Продолжить
           </button>
+          <label className="flex items-start gap-3 rounded-xl border border-navy-100 p-3">
+            <input
+              type="checkbox"
+              checked={consentChecked}
+              onChange={(e) => setConsentChecked(e.target.checked)}
+              className="mt-0.5 h-5 w-5 accent-navy-600"
+            />
+            <span className="text-sm text-navy-700">Я согласен(на) на обработку персональных данных в системе учёта отпуска ГСМ</span>
+          </label>
         </div>
       )}
 
