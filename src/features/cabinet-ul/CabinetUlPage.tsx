@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, LogOut, RotateCcw, Trash2, X } from 'lucide-react';
 import type { VehicleCategory } from '@/types/entities';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
 import { useTransactionStore } from '@/store/transaction.store';
@@ -51,9 +54,9 @@ export function CabinetUlPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-sm text-status-blocked">Нет активной сессии ЮЛ — сначала войдите или зарегистрируйтесь.</p>
-        <button type="button" onClick={() => navigate('/')} className="mt-4 rounded-2xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white">
+        <Button type="button" onClick={() => navigate('/')} className="mt-4">
           На главную
-        </button>
+        </Button>
       </div>
     );
   }
@@ -87,7 +90,7 @@ export function CabinetUlPage() {
   return (
     <div className="space-y-6 p-4">
       {showIssuedBanner && (
-        <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-gray-200/60">
+        <Card className="flex-row items-start">
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-status-ok" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-gray-900">Карты успешно выпущены</p>
@@ -96,7 +99,7 @@ export function CabinetUlPage() {
           <button type="button" onClick={() => setShowIssuedBanner(false)} aria-label="Закрыть" className="text-gray-300 hover:text-gray-500">
             <X className="h-4 w-4" />
           </button>
-        </div>
+        </Card>
       )}
 
       <div className="flex items-center justify-between gap-3">
@@ -109,39 +112,34 @@ export function CabinetUlPage() {
             <h1 className="truncate text-lg font-bold text-gray-900">{company.name}</h1>
           </div>
         </div>
-        <button type="button" onClick={handleLogout} className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-sm shadow-gray-200/60 transition-transform active:scale-95">
+        <Button type="button" variant="outline" size="sm" onClick={handleLogout} className="shrink-0 rounded-full">
           <LogOut className="h-3.5 w-3.5" />
           Выйти
-        </button>
+        </Button>
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">Автопарк</h2>
-          <button type="button" onClick={() => setShowAddVehicle((v) => !v)} className="text-xs font-semibold text-orange-600 transition-transform active:scale-95">
+          <Button type="button" variant="link" size="sm" onClick={() => setShowAddVehicle((v) => !v)} className="h-auto p-0 text-orange-600">
             + Добавить ТС
-          </button>
+          </Button>
         </div>
 
         {showAddVehicle && (
-          <div className="mb-3 space-y-2 rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
-            <input value={newGrnz} onChange={(e) => setNewGrnz(e.target.value)} placeholder="ГРНЗ" className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+          <Card className="mb-3">
+            <Input value={newGrnz} onChange={(e) => setNewGrnz(e.target.value)} placeholder="ГРНЗ" />
             <div className="flex gap-2">
               {(['passenger', 'truck'] as VehicleCategory[]).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setNewCategory(c)}
-                  className={`flex-1 rounded-xl border py-2 text-sm ${newCategory === c ? 'border-navy-600 bg-navy-600 text-white' : 'border-gray-200 text-gray-700'}`}
-                >
+                <Button key={c} type="button" variant={newCategory === c ? 'default' : 'outline'} onClick={() => setNewCategory(c)} className="flex-1 rounded-xl">
                   {CATEGORY_LABEL[c]}
-                </button>
+                </Button>
               ))}
             </div>
-            <button type="button" onClick={handleAddVehicle} disabled={!newGrnz.trim()} className="w-full rounded-xl bg-orange-500 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100">
+            <Button type="button" onClick={handleAddVehicle} disabled={!newGrnz.trim()} className="w-full">
               Добавить и выпустить карту
-            </button>
-          </div>
+            </Button>
+          </Card>
         )}
 
         <div className="space-y-3">
@@ -149,7 +147,7 @@ export function CabinetUlPage() {
             const card = cards.find((c) => c.vehicleId === vehicle.id);
             const driver = vehicle.driverId ? allDrivers.find((d) => d.id === vehicle.driverId) : undefined;
             return (
-              <div key={vehicle.id} className="rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
+              <Card key={vehicle.id}>
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold text-gray-900">
@@ -167,34 +165,30 @@ export function CabinetUlPage() {
                   </button>
                 </div>
 
-                {card && (
-                  <div className="mt-2">
-                    <LimitProgressBar usedL={card.usedTodayL} limitL={card.dailyLimitL} />
-                  </div>
-                )}
+                {card && <LimitProgressBar usedL={card.usedTodayL} limitL={card.dailyLimitL} bare />}
 
-                <div className="mt-2 flex gap-2 text-xs">
+                <div className="flex gap-2 text-xs">
                   {driver ? (
-                    <button type="button" onClick={() => unassignDriver(vehicle.id, driver.id)} className="font-semibold text-gray-500">
+                    <Button type="button" variant="link" size="sm" onClick={() => unassignDriver(vehicle.id, driver.id)} className="h-auto p-0 text-gray-500">
                       Снять водителя
-                    </button>
+                    </Button>
                   ) : (
-                    <button type="button" onClick={() => setDriverFormFor(vehicle.id)} className="font-semibold text-gray-500">
+                    <Button type="button" variant="link" size="sm" onClick={() => setDriverFormFor(vehicle.id)} className="h-auto p-0 text-gray-500">
                       Назначить водителя
-                    </button>
+                    </Button>
                   )}
                 </div>
 
                 {driverFormFor === vehicle.id && (
-                  <div className="mt-2 space-y-2 rounded-xl bg-gray-50 p-2">
-                    <input value={driverFio} onChange={(e) => setDriverFio(e.target.value)} placeholder="ФИО водителя" className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs" />
-                    <input value={driverIin} onChange={(e) => setDriverIin(e.target.value)} placeholder="ИИН водителя" className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs" />
-                    <button type="button" onClick={() => handleAssignDriver(vehicle.id)} className="w-full rounded-lg bg-navy-600 py-1.5 text-xs font-semibold text-white">
+                  <div className="space-y-2 rounded-xl bg-gray-50 p-2">
+                    <Input value={driverFio} onChange={(e) => setDriverFio(e.target.value)} placeholder="ФИО водителя" className="h-9 bg-white text-xs" />
+                    <Input value={driverIin} onChange={(e) => setDriverIin(e.target.value)} placeholder="ИИН водителя" className="h-9 bg-white text-xs" />
+                    <Button type="button" size="sm" onClick={() => handleAssignDriver(vehicle.id)} className="w-full">
                       Сохранить
-                    </button>
+                    </Button>
                   </div>
                 )}
-              </div>
+              </Card>
             );
           })}
           {fleetVehicles.length === 0 && <p className="text-sm text-gray-400">В автопарке нет активных ТС.</p>}
@@ -202,18 +196,18 @@ export function CabinetUlPage() {
       </div>
 
       <div className="flex gap-3">
-        <button type="button" onClick={() => navigate('/cabinet/history')} className="flex-1 rounded-2xl bg-white py-3 text-sm font-semibold text-gray-700 shadow-sm shadow-gray-200/60 transition-transform active:scale-[0.98]">
+        <Button type="button" variant="outline" onClick={() => navigate('/cabinet/history')} className="flex-1">
           История заправок
-        </button>
-        <button type="button" onClick={handleExport} className="flex-1 rounded-2xl bg-orange-500 py-3 text-sm font-semibold text-white shadow-sm shadow-orange-500/30 transition-transform active:scale-[0.98]">
+        </Button>
+        <Button type="button" onClick={handleExport} className="flex-1">
           Скачать отчёт
-        </button>
+        </Button>
       </div>
 
-      <button type="button" onClick={handleReset} className="flex w-full items-center justify-center gap-2 py-2 text-xs font-medium text-gray-400">
+      <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="w-full text-gray-400">
         <RotateCcw className="h-3.5 w-3.5" />
         Сбросить демо-данные
-      </button>
+      </Button>
     </div>
   );
 }

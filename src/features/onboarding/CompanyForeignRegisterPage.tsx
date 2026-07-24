@@ -9,6 +9,7 @@ import { VehicleFleetStep, type FleetVehicleDraft } from './steps/VehicleFleetSt
 import { DriverAssignStep, type DriverAssignment } from './steps/DriverAssignStep';
 import { generateDemoFio } from '@/lib/demoIdentity';
 import { finalizeUlRegistration } from './registrationActions';
+import { Button } from '@/components/ui/button';
 
 type Step = 'company' | 'passport' | 'berkut' | 'rejected' | 'fleet' | 'drivers';
 const STEP_ORDER: Step[] = ['company', 'passport', 'berkut', 'fleet', 'drivers'];
@@ -86,16 +87,17 @@ export function CompanyForeignRegisterPage() {
           <XCircle className="mx-auto h-12 w-12 text-status-blocked" />
           <p className="text-lg font-bold text-gray-900">Отказ в регистрации</p>
           <p className="text-sm text-gray-500">{rejectReason}</p>
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => {
               setPassportNumber('');
               setStep('passport');
             }}
-            className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60"
+            className="w-full"
           >
             Попробовать снова
-          </button>
+          </Button>
         </div>
       )}
 

@@ -4,6 +4,9 @@ import { Smartphone, Wallet, Building2, User as UserIcon } from 'lucide-react';
 import { ChannelCard } from '@/components/ui/ChannelCard';
 import { OtpInput } from '@/components/ui/OtpInput';
 import { SmsStep } from '@/features/onboarding/steps/SmsStep';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useUserStore } from '@/store/user.store';
 
 type Method = 'method' | 'egov-bvu' | 'kmg-phone' | 'kmg-sms' | 'ul-bin' | 'ul-code';
@@ -78,12 +81,10 @@ export function LoginPage() {
 
       {step === 'method' && (
         <div className="space-y-3">
-          <p className="mb-1 text-sm text-gray-500">eGov Mobile / БВУ — резидент, мгновенный вход</p>
-          <ChannelCard icon={Smartphone} title="eGov Mobile / БВУ" subtitle="Выбрать из ранее зарегистрированных" onClick={() => setStep('egov-bvu')} />
-          <p className="mb-1 mt-4 text-sm text-gray-500">Приложение КМГ — резидент/иностранец</p>
-          <ChannelCard icon={Wallet} title="Телефон + SMS-код" onClick={() => setStep('kmg-phone')} />
-          <p className="mb-1 mt-4 text-sm text-gray-500">ЮЛ — резидент и нерезидент</p>
-          <ChannelCard icon={Building2} title="БИН / рег. номер + код" onClick={() => setStep('ul-bin')} />
+          <ChannelCard icon={Smartphone} title="eGov Mobile / БВУ" subtitle="Войти через приложение eGov или Банк" onClick={() => setStep('egov-bvu')} />
+          <ChannelCard icon={Wallet} title="По номеру телефона" subtitle="Вход по SMS-коду" onClick={() => setStep('kmg-phone')} />
+          <ChannelCard icon={Building2} title="Для бизнеса" subtitle="Вход по БИН и электронной подписи" onClick={() => setStep('ul-bin')} />
+          <p className="mt-6 text-center text-xs text-gray-400">Демо-режим: доступны все способы входа на тестовых данных — подсказки будут на следующем экране</p>
         </div>
       )}
 
@@ -100,26 +101,26 @@ export function LoginPage() {
               disabled={signingInId !== null}
             />
           ))}
-          <button type="button" onClick={() => setStep('method')} className="mt-2 text-sm text-gray-500">
+          <Button type="button" variant="link" size="sm" onClick={() => setStep('method')} className="mt-2 h-auto p-0 text-gray-500">
             ← Назад
-          </button>
+          </Button>
         </div>
       )}
 
       {step === 'kmg-phone' && (
         <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="+77011234502" />
-            <p className="mt-1 text-xs text-gray-400">Демо: +77011234502 (ФЛ-резидент) · +79261234567 (иностранец)</p>
-            {phoneError && <p className="mt-1 text-xs text-status-blocked">{phoneError}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="login-phone">Номер телефона</Label>
+            <Input id="login-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+77011234502" />
+            <p className="text-xs text-gray-400">Демо: +77011234502 (ФЛ-резидент) · +79261234567 (иностранец)</p>
+            {phoneError && <p className="text-xs text-status-blocked">{phoneError}</p>}
           </div>
-          <button type="button" onClick={handlePhoneSubmit} disabled={!phone} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40 disabled:shadow-none">
+          <Button type="button" onClick={handlePhoneSubmit} disabled={!phone} className="w-full">
             Продолжить
-          </button>
-          <button type="button" onClick={() => setStep('method')} className="text-sm text-gray-500">
+          </Button>
+          <Button type="button" variant="link" size="sm" onClick={() => setStep('method')} className="h-auto p-0 text-gray-500">
             ← Назад
-          </button>
+          </Button>
         </div>
       )}
 
@@ -127,24 +128,24 @@ export function LoginPage() {
 
       {step === 'ul-bin' && (
         <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500">БИН / регистрационный номер компании</label>
-            <input value={binOrRegNumber} onChange={(e) => setBinOrRegNumber(e.target.value)} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="123456789012" />
-            <p className="mt-1 text-xs text-gray-400">Демо: 123456789012 (резидент) · RU-7743012345 (нерезидент)</p>
-            {binError && <p className="mt-1 text-xs text-status-blocked">{binError}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="login-bin">БИН / регистрационный номер компании</Label>
+            <Input id="login-bin" value={binOrRegNumber} onChange={(e) => setBinOrRegNumber(e.target.value)} placeholder="123456789012" />
+            <p className="text-xs text-gray-400">Демо: 123456789012 (резидент) · RU-7743012345 (нерезидент)</p>
+            {binError && <p className="text-xs text-status-blocked">{binError}</p>}
           </div>
-          <button type="button" onClick={handleBinSubmit} disabled={!binOrRegNumber} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40 disabled:shadow-none">
+          <Button type="button" onClick={handleBinSubmit} disabled={!binOrRegNumber} className="w-full">
             Продолжить
-          </button>
-          <button type="button" onClick={() => setStep('method')} className="text-sm text-gray-500">
+          </Button>
+          <Button type="button" variant="link" size="sm" onClick={() => setStep('method')} className="h-auto p-0 text-gray-500">
             ← Назад
-          </button>
+          </Button>
         </div>
       )}
 
       {step === 'ul-code' && (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">Подтвердите вход кодом (имитация ЭЦП/кода админа)</p>
+          <p className="text-sm text-gray-600">Подтвердите вход электронной подписью</p>
           <OtpInput length={4} value={ecpCode} onChange={handleEcpCodeChange} error={!!ecpError} />
           <p className="text-xs text-gray-400">Демо-код: 1234</p>
           {ecpError && <p className="text-xs text-status-blocked">{ecpError}</p>}

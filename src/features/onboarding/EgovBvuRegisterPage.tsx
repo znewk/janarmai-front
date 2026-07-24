@@ -8,6 +8,8 @@ import { generateDemoFio, generateDemoIin, generateDemoPhone } from '@/lib/demoI
 import { deriveFlCardSpecs } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
 import { maskIdentifier } from '@/lib/mask';
+import { Card, cardBaseClassName } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 type Step = 'identity' | 'vehicle' | 'result';
 const STEP_ORDER: Step[] = ['identity', 'vehicle', 'result'];
@@ -43,12 +45,12 @@ export function EgovBvuRegisterPage() {
     <WizardShell title="Регистрация · Через eGov / банковское приложение" stepIndex={stepIndex} stepCount={STEP_ORDER.length} onBack={() => navigate('/')}>
       {step === 'identity' && (
         <div className="space-y-6">
-          <div className="rounded-2xl bg-white p-4 shadow-sm shadow-gray-200/60">
+          <Card>
             <div className="flex items-center gap-2 text-status-ok">
               <CheckCircle2 className="h-5 w-5" />
               <span className="text-sm font-medium">Данные подтверждены каналом</span>
             </div>
-            <dl className="mt-3 space-y-1 text-sm text-gray-700">
+            <dl className="space-y-1 text-sm text-gray-700">
               <div className="flex justify-between">
                 <dt className="text-gray-400">ФИО</dt>
                 <dd>{identity.fio}</dd>
@@ -62,16 +64,11 @@ export function EgovBvuRegisterPage() {
                 <dd>{identity.phone}</dd>
               </div>
             </dl>
-          </div>
-          <button
-            type="button"
-            disabled={!consentChecked}
-            onClick={() => setStep('vehicle')}
-            className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40 disabled:shadow-none"
-          >
+          </Card>
+          <Button type="button" disabled={!consentChecked} onClick={() => setStep('vehicle')} className="w-full">
             Продолжить
-          </button>
-          <label className="flex items-start gap-3 rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
+          </Button>
+          <label className={`${cardBaseClassName} flex-row items-start gap-3`}>
             <input
               type="checkbox"
               checked={consentChecked}

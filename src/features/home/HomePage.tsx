@@ -7,6 +7,8 @@ import { useTransactionStore } from '@/store/transaction.store';
 import { selectSessionCards } from '@/lib/sessionCards';
 import { CARD_TYPE_LABEL } from '@/lib/cardLabels';
 import { TransactionRow } from '@/components/ui/TransactionRow';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { exportFleetReportCsv } from '@/features/cabinet-ul/exportReport';
 import { getInitials } from '@/lib/initials';
 
@@ -60,9 +62,9 @@ export function HomePage() {
     return (
       <div className="p-6 text-center">
         <p className="text-sm text-gray-500">Нет активной сессии — сначала войдите или зарегистрируйтесь.</p>
-        <button type="button" onClick={() => navigate('/')} className="mt-4 rounded-2xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white">
+        <Button type="button" onClick={() => navigate('/')} className="mt-4">
           На главную
-        </button>
+        </Button>
       </div>
     );
   }
@@ -123,20 +125,21 @@ export function HomePage() {
           ) : (
             <p className="mt-1 text-2xl font-bold text-orange-400">без лимита</p>
           )}
-          <button
-            type="button"
-            onClick={() => navigate('/card')}
-            className="mt-4 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-95"
-          >
+          <Button type="button" onClick={() => navigate('/card')} className="mt-4 rounded-full">
             <Fuel className="h-4 w-4" />
             Показать QR для заправки
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className={`grid gap-3 ${quickActions.length > 2 ? 'grid-cols-4' : 'grid-cols-2'}`}>
         {quickActions.map(({ icon: Icon, label, color, onClick }) => (
-          <button key={label} type="button" onClick={onClick} className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center shadow-sm shadow-gray-200/60">
+          <button
+            key={label}
+            type="button"
+            onClick={onClick}
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-100 bg-white p-3 text-center shadow-sm shadow-gray-200/60 transition-transform active:scale-[0.97]"
+          >
             <span className={`flex h-11 w-11 items-center justify-center rounded-full ${color === 'navy' ? 'bg-navy-600' : 'bg-orange-500'}`}>
               <Icon className="h-5 w-5 text-white" />
             </span>
@@ -148,21 +151,23 @@ export function HomePage() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">Последние заправки</h2>
-          <button type="button" onClick={() => navigate('/cabinet/history')} className="text-xs font-semibold text-navy-600">
+          <Button type="button" variant="link" size="sm" onClick={() => navigate('/cabinet/history')} className="h-auto p-0">
             Все →
-          </button>
+          </Button>
         </div>
         {recentTransactions.length > 0 ? (
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-sm shadow-gray-200/60">
+          <Card className="gap-0 divide-y divide-gray-100 overflow-hidden p-0">
             {recentTransactions.map((t) => {
               const card = myCards.find((c) => c.id === t.cardId);
               const vehicle = card?.vehicleId ? vehicles.find((v) => v.id === card.vehicleId) : undefined;
               const label = vehicle ? `${vehicle.grnz}` : card ? CARD_TYPE_LABEL[card.cardType] : '';
               return <TransactionRow key={t.id} transaction={t} cardLabel={label} />;
             })}
-          </div>
+          </Card>
         ) : (
-          <p className="rounded-2xl bg-white p-4 text-center text-sm text-gray-400 shadow-sm shadow-gray-200/60">Заправок пока не было</p>
+          <Card>
+            <p className="text-center text-sm text-gray-400">Заправок пока не было</p>
+          </Card>
         )}
       </div>
     </div>

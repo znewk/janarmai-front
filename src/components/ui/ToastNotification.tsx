@@ -16,7 +16,7 @@ const CIRCLE_CLASS_BY_VARIANT: Record<ToastVariant, string> = {
 function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const Icon = ICON_BY_VARIANT[toast.variant];
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-white p-3.5 shadow-lg shadow-gray-300/40">
+    <div className="flex items-start gap-3 rounded-2xl border border-gray-100 bg-white p-3.5 shadow-lg shadow-gray-300/40">
       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${CIRCLE_CLASS_BY_VARIANT[toast.variant]}`}>
         <Icon className="h-4 w-4 text-white" />
       </span>

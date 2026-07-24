@@ -8,6 +8,9 @@ import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckS
 import { LimitResultStep } from './steps/LimitResultStep';
 import { generateDemoFio, generateDemoPhone } from '@/lib/demoIdentity';
 import { finalizeFlRegistration } from './registrationActions';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 type Step = 'passport' | 'berkut' | 'rejected' | 'phone' | 'vehicle' | 'result';
 const STEP_ORDER: Step[] = ['passport', 'berkut', 'phone', 'vehicle', 'result'];
@@ -63,29 +66,30 @@ export function ForeignRegisterPage() {
           <XCircle className="mx-auto h-12 w-12 text-status-blocked" />
           <p className="text-lg font-bold text-gray-900">Отказ в регистрации</p>
           <p className="text-sm text-gray-500">{rejectReason}</p>
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => {
               setPassportNumber('');
               setStep('passport');
             }}
-            className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60"
+            className="w-full"
           >
             Попробовать снова
-          </button>
+          </Button>
         </div>
       )}
 
       {step === 'phone' && (
         <div className="space-y-4">
           <p className="text-sm text-gray-600">Для иностранцев принимается любой номер как канал связи — просто контакт, без SMS-подтверждения</p>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" />
+          <div className="space-y-1.5">
+            <Label htmlFor="foreign-phone">Номер телефона</Label>
+            <Input id="foreign-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
-          <button type="button" onClick={() => setStep('vehicle')} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
+          <Button type="button" onClick={() => setStep('vehicle')} className="w-full">
             Продолжить
-          </button>
+          </Button>
         </div>
       )}
 

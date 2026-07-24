@@ -4,6 +4,9 @@ import { CheckCircle2, Clock4, CreditCard, ShieldCheck, X } from 'lucide-react';
 import { CardMunai } from '@/components/ui/CardMunai';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
 import { QrFullscreenModal } from '@/components/ui/QrFullscreenModal';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
 import { CARD_TYPE_LABEL } from '@/lib/cardLabels';
@@ -54,9 +57,9 @@ export function CardScreenPage() {
           <CreditCard className="h-7 w-7 text-gray-300" />
         </span>
         <p className="mt-4 text-sm text-gray-500">Нет активной сессии — сначала войдите или зарегистрируйтесь.</p>
-        <button type="button" onClick={() => navigate('/')} className="mt-4 rounded-2xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-orange-500/30 active:scale-[0.97] transition-transform">
+        <Button type="button" onClick={() => navigate('/')} className="mt-4">
           На главную
-        </button>
+        </Button>
       </div>
     );
   }
@@ -80,35 +83,30 @@ export function CardScreenPage() {
   return (
     <div className="space-y-5 p-4">
       {showIssuedBanner && (
-        <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-gray-200/60 animate-sheet-rise-in">
+        <Card className="flex-row items-start animate-sheet-rise-in">
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-status-ok" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-gray-900">Карта успешно выпущена</p>
-            <button type="button" onClick={() => navigate('/cabinet')} className="mt-2 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform">
+            <Button type="button" size="sm" onClick={() => navigate('/cabinet')} className="mt-2 rounded-full">
               Перейти в кабинет
-            </button>
+            </Button>
           </div>
           <button type="button" onClick={() => setShowIssuedBanner(false)} aria-label="Закрыть" className="text-gray-300 hover:text-gray-500">
             <X className="h-4 w-4" />
           </button>
-        </div>
+        </Card>
       )}
 
       {myCards.length > 1 && (
-        <div className="flex gap-1 rounded-full bg-gray-200/70 p-1">
-          {myCards.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setSelectedCardId(c.id)}
-              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                c.id === activeCard.id ? 'bg-white text-navy-800 shadow-sm' : 'text-gray-500'
-              }`}
-            >
-              {CARD_TYPE_LABEL[c.cardType]}
-            </button>
-          ))}
-        </div>
+        <Tabs value={activeCard.id} onValueChange={setSelectedCardId}>
+          <TabsList className="w-full">
+            {myCards.map((c) => (
+              <TabsTrigger key={c.id} value={c.id} className="flex-1">
+                {CARD_TYPE_LABEL[c.cardType]}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
 
       <CardMunai
@@ -123,20 +121,18 @@ export function CardScreenPage() {
 
       <LimitProgressBar usedL={activeCard.usedTodayL} limitL={activeCard.dailyLimitL} />
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm shadow-gray-200/60">
+      <Card className="gap-0 divide-y divide-gray-100 p-0">
         <div className="flex items-center gap-3 px-4 py-3">
           <Clock4 className="h-4 w-4 shrink-0 text-gray-400" />
           <p className="flex-1 text-xs text-gray-500">Сброс лимита</p>
           <p className="text-xs font-medium tabular-nums text-gray-700">{formatResetTime(activeCard.resetAt)} · Астана</p>
         </div>
-        <div className="border-t border-gray-100 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-gray-400" />
-            <p className="flex-1 text-xs text-gray-500">Цена в пределах лимита</p>
-            <p className="text-xs font-medium text-gray-700">{activeCard.priceEligible ? 'Льготная' : 'Предельная'}</p>
-          </div>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-gray-400" />
+          <p className="flex-1 text-xs text-gray-500">Цена в пределах лимита</p>
+          <p className="text-xs font-medium text-gray-700">{activeCard.priceEligible ? 'Льготная' : 'Предельная'}</p>
         </div>
-      </div>
+      </Card>
 
       <p className="text-center text-xs text-gray-400">Нажмите на QR-код на карте, чтобы предъявить его на АЗС</p>
 

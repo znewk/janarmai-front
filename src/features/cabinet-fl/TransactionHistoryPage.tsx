@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TransactionRow } from '@/components/ui/TransactionRow';
 import { FilterBar, type FilterDef } from '@/components/ui/FilterBar';
+import { Card } from '@/components/ui/card';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
 import { useTransactionStore } from '@/store/transaction.store';
@@ -117,7 +118,7 @@ export function TransactionHistoryPage() {
       <FilterBar filters={filters} />
 
       {filtered.length > 0 ? (
-        <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-sm shadow-gray-200/60">
+        <Card className="gap-0 divide-y divide-gray-100 overflow-hidden p-0">
           {filtered.map((t) => {
             const card = myCards.find((c) => c.id === t.cardId);
             const vehicle = card?.vehicleId ? companyVehicles.find((v) => v.id === card.vehicleId) : undefined;
@@ -125,9 +126,11 @@ export function TransactionHistoryPage() {
             const label = vehicle ? `${vehicle.grnz}${driver ? ` · ${driver.fio}` : ''}` : card ? CARD_TYPE_LABEL[card.cardType] : '';
             return <TransactionRow key={t.id} transaction={t} cardLabel={label} />;
           })}
-        </div>
+        </Card>
       ) : (
-        <p className="rounded-2xl bg-white p-4 text-center text-sm text-gray-400 shadow-sm shadow-gray-200/60">Нет заправок по выбранным фильтрам.</p>
+        <Card>
+          <p className="text-center text-sm text-gray-400">Нет заправок по выбранным фильтрам.</p>
+        </Card>
       )}
     </div>
   );

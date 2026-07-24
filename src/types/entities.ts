@@ -107,3 +107,38 @@ export interface AdminUser {
   fio: string;
   role: AdminRole;
 }
+
+/** Риск-тир по риск-баллу 0–100 — единая шкала для кейсов, регионов и сетей АЗС (Analytics Deep Dive, разд. 2.2). */
+export type RiskTier = 'high' | 'medium' | 'low';
+
+/**
+ * Таксономия аномалий по образцу SGS Fuel Integrity Programs (Analytics Deep Dive, разд. 2.1/4.2) —
+ * заменяет бинарный статус «Легально/Блокировка» из исходного ТЗ 8.5.
+ */
+export type AnomalyType = 'export_smuggling' | 'limit_exceeded' | 'frequent_shuttle' | 'technical_failure';
+
+export type CaseStatus = 'new' | 'in_progress' | 'closed';
+
+/**
+ * Операционный слой аналитики (Analytics Deep Dive, разд. 3, 4.3) — конкретный случай для разбора
+ * аналитиком, а не агрегат. `status`/`analystNote` мутируемы через `case.store.ts` (мок, без бэкенда).
+ */
+export interface Case {
+  id: string;
+  riskScore: number;
+  riskTier: RiskTier;
+  dateTime: string;
+  region: string;
+  stationId: string;
+  stationName: string;
+  /** Маскированный ИИН/БИН держателя карты, по которой сработал алерт. */
+  maskedId: string;
+  anomalyType: AnomalyType;
+  status: CaseStatus;
+  /** Конкретные причины срабатывания алерта — напр. «3 заправки за 40 минут в разных АЗС». */
+  reasonCodes: string[];
+  /** Связанные транзакции — id из `Transaction` (могут быть пустыми, если кейс не привязан к seed-истории). */
+  relatedTransactionIds: string[];
+  /** Заметка аналитика — мок-поле, редактируется на `CaseDetailPage`, без сохранения на бэкенд. */
+  analystNote: string;
+}

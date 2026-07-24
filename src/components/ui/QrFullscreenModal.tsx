@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { CheckCircle2, ScanLine, X } from 'lucide-react';
-import { StepperStatus, type StepperStep } from '@/components/ui/StepperStatus';
 import { useCardStore } from '@/store/card.store';
-import { pickAutoFuelParams, simulateFueling, type FuelingResult } from '@/features/card/fuelingActions';
+import { pickAutoFuelParams, simulateFueling } from '@/features/card/fuelingActions';
 import { showToast } from '@/components/ui/toastStore';
-import { FUEL_TYPE_LABEL } from '@/mocks/seed';
+import { Button } from '@/components/ui/button';
 
 export interface QrFullscreenModalProps {
   open: boolean;
@@ -18,41 +18,29 @@ export interface QrFullscreenModalProps {
   qrRefreshSeconds?: number;
 }
 
-type Phase = 'display' | 'scanning' | 'confirming' | 'success';
+type Phase = 'display' | 'scanning' | 'confirmed';
 
 const SCAN_WAIT_MS = 3000;
 const SCANNING_MS = 1300;
-const CONFIRM_STEP_1_MS = 700;
-const CONFIRM_STEP_2_MS = 1300;
-const CONFIRM_DONE_MS = 1900;
 
 /**
- * Полноэкранный показ QR — одновременно и «предъявление кассиру», и вся демо-симуляция заправки
- * (по запросу ПМ убрана отдельная кнопка/форма «Симулировать заправку», см. OPEN_QUESTIONS.md):
- * открыли QR → 3с ожидания → авто-имитация сканирования АЗС → степпер подтверждения отпуска
- * (те же 3 шага, что раньше были в S-20) → результат чеком прямо здесь. Объём/вид топлива
- * подбираются автоматически (`pickAutoFuelParams`) — правдоподобно, от остатка лимита карты.
- * Закрытие крестиком/Escape до момента подтверждения отменяет операцию (транзакция не пишется).
+ * Полноэкранный показ QR — «предъявление кассиру»: открыли QR → 3с ожидания → авто-имитация
+ * сканирования АЗС → подтверждение факта сканирования. По прямому указанию пользователя (реализм
+ * флоу): держатель карты в реальности НЕ видит внутренние проверки/резерв лимита и не получает
+ * мгновенный чек — это делает касса АЗС на своей стороне и асинхронно шлёт результат в сервис;
+ * пользователь узнаёт детали заправки (объём/топливо/сумма) только позже, в истории операций.
+ * Поэтому здесь после сканирования нет ни степпера проверок, ни чека — только факт «QR принят»,
+ * а сама демо-транзакция (`simulateFueling`) пишется в фоне, без отображения в этой модалке.
+ * Закрытие крестиком/Escape до момента сканирования отменяет операцию (транзакция не пишется).
  */
 export function QrFullscreenModal({ open, onClose, cardId, qrToken, holderName, maskedIdentifier, qrRefreshSeconds = 30 }: QrFullscreenModalProps) {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>('display');
   const [secondsLeft, setSecondsLeft] = useState(qrRefreshSeconds);
-  const [steps, setSteps] = useState<StepperStep[]>([
-    { id: 'check', label: 'Проверка лимита', status: 'pending' },
-    { id: 'reserve', label: 'Резерв объёма', status: 'pending' },
-    { id: 'confirm', label: 'Отпуск подтверждён АЗС', status: 'pending' },
-  ]);
-  const [result, setResult] = useState<FuelingResult | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setPhase('display');
-    setResult(null);
-    setSteps([
-      { id: 'check', label: 'Проверка лимита', status: 'pending' },
-      { id: 'reserve', label: 'Резерв объёма', status: 'pending' },
-      { id: 'confirm', label: 'Отпуск подтверждён АЗС', status: 'pending' },
-    ]);
 
     const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -60,36 +48,18 @@ export function QrFullscreenModal({ open, onClose, cardId, qrToken, holderName, 
 
     timers.push(
       setTimeout(() => {
-        setPhase('confirming');
-        setSteps((s) => s.map((step) => (step.id === 'check' ? { ...step, status: 'in_progress' } : step)));
-      }, SCAN_WAIT_MS + SCANNING_MS),
-    );
-
-    timers.push(
-      setTimeout(() => {
-        setSteps((s) => s.map((step) => (step.id === 'check' ? { ...step, status: 'success' } : step.id === 'reserve' ? { ...step, status: 'in_progress' } : step)));
-      }, SCAN_WAIT_MS + SCANNING_MS + CONFIRM_STEP_1_MS),
-    );
-
-    timers.push(
-      setTimeout(() => {
-        setSteps((s) => s.map((step) => (step.id === 'reserve' ? { ...step, status: 'success' } : step.id === 'confirm' ? { ...step, status: 'in_progress' } : step)));
-      }, SCAN_WAIT_MS + SCANNING_MS + CONFIRM_STEP_2_MS),
-    );
-
-    timers.push(
-      setTimeout(() => {
+        setPhase('confirmed');
+        // Отпуск топлива и расчёт суммы — на стороне АЗС/бэкенда, пользователю не показываются.
+        // В демо транзакция всё равно создаётся здесь же (без реального бэкенда), но молча —
+        // держатель карты увидит её позже сам, открыв историю операций.
         const card = useCardStore.getState().cards.find((c) => c.id === cardId);
         if (!card) return;
         const { fuelType, volumeL } = pickAutoFuelParams(card);
         const fuelingResult = simulateFueling({ cardId, fuelType, volumeL });
-        setSteps((s) => s.map((step) => (step.id === 'confirm' ? { ...step, status: 'success' } : step)));
-        setResult(fuelingResult);
-        setPhase('success');
         if (fuelingResult.warningThresholdReached) {
           showToast({ variant: 'warning', message: 'Достигнуто 80% суточного лимита' });
         }
-      }, SCAN_WAIT_MS + SCANNING_MS + CONFIRM_DONE_MS),
+      }, SCAN_WAIT_MS + SCANNING_MS),
     );
 
     return () => timers.forEach(clearTimeout);
@@ -113,9 +83,12 @@ export function QrFullscreenModal({ open, onClose, cardId, qrToken, holderName, 
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const priceLabel = useMemo(() => (result?.transaction.priceType === 'preferential' ? 'льготная цена' : 'предельная цена'), [result]);
-
   if (!open) return null;
+
+  const goToHistory = () => {
+    onClose();
+    navigate('/cabinet/history');
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white animate-backdrop-fade-in" role="dialog" aria-modal="true">
@@ -156,45 +129,22 @@ export function QrFullscreenModal({ open, onClose, cardId, qrToken, holderName, 
           </div>
         )}
 
-        {phase === 'confirming' && (
-          <div className="mt-8 w-full max-w-[280px] animate-modal-pop-in rounded-2xl bg-white p-4 text-left shadow-lg shadow-gray-200/60 ring-1 ring-gray-100">
-            <p className="mb-4 text-center text-xs font-medium text-gray-500">Сотрудник АЗС подтверждает отпуск топлива…</p>
-            <StepperStatus steps={steps} />
-          </div>
-        )}
-
-        {phase === 'success' && result && (
-          <div className="mt-6 flex w-full max-w-[300px] flex-col items-center animate-modal-pop-in">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-status-ok/10">
-              <CheckCircle2 className="h-8 w-8 text-status-ok" />
+        {phase === 'confirmed' && (
+          <div className="mt-6 flex w-full max-w-[280px] flex-col items-center animate-modal-pop-in">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-status-ok/10">
+              <CheckCircle2 className="h-9 w-9 text-status-ok" />
             </span>
-            <p className="mt-3 text-base font-semibold text-gray-900">Заправка подтверждена</p>
-            <p className="text-xs text-gray-400">Запись добавлена в историю операций</p>
+            <p className="mt-4 text-base font-semibold text-gray-900">QR-код принят</p>
+            <p className="mt-1 text-sm text-gray-500">Сотрудник АЗС завершит отпуск топлива. Заправка появится в истории операций.</p>
 
-            <div className="mt-4 w-full space-y-2 rounded-2xl bg-gray-50 p-4 text-left">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">АЗС</span>
-                <span className="font-medium text-gray-900">{result.transaction.stationName}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Топливо</span>
-                <span className="font-medium tabular-nums text-gray-900">
-                  {result.transaction.volumeL} л · {FUEL_TYPE_LABEL[result.transaction.fuelType]}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Цена</span>
-                <span className="font-medium text-gray-900">{priceLabel}</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-sm">
-                <span className="text-gray-500">Итого</span>
-                <span className="font-semibold tabular-nums text-orange-600">{result.transaction.totalKzt.toLocaleString('ru-RU')} ₸</span>
-              </div>
+            <div className="mt-6 flex w-full flex-col gap-2">
+              <Button type="button" onClick={goToHistory} className="w-full">
+                Перейти в историю
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose} className="w-full">
+                Готово
+              </Button>
             </div>
-
-            <button type="button" onClick={onClose} className="mt-5 w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 transition-transform active:scale-[0.98]">
-              Готово
-            </button>
           </div>
         )}
       </div>

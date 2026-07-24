@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Smartphone, Building2 } from 'lucide-react';
 import { ChannelCard } from '@/components/ui/ChannelCard';
+import { Button } from '@/components/ui/button';
 
 /**
  * S-00 — выбор канала входа (ТЗ 4.0).
@@ -26,17 +27,17 @@ export function ChannelSelectPage() {
         <ChannelCard
           icon={Smartphone}
           title="Через eGov / банковское приложение"
-          subtitle="Данные уже верифицированы каналом"
+          subtitle="Быстрая регистрация без ввода данных"
           onClick={() => navigate('/register/egov-bvu')}
         />
-        <ChannelCard icon={Building2} title="Приложение КМГ" subtitle="Полная проверка — для всех типов лиц" onClick={() => navigate('/register/kmg')} />
+        <ChannelCard icon={Building2} title="Приложение КМГ" subtitle="Регистрация с проверкой документов" onClick={() => navigate('/register/kmg')} />
       </div>
 
       <p className="mt-8 text-center text-sm text-navy-400">
         Уже есть аккаунт?{' '}
-        <button type="button" onClick={() => navigate('/login')} className="font-semibold text-navy-700">
+        <Button type="button" variant="link" onClick={() => navigate('/login')} className="h-auto p-0 font-semibold text-navy-700">
           Войти
-        </button>
+        </Button>
       </p>
     </div>
   );

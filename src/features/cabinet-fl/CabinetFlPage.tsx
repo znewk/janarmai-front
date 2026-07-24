@@ -5,6 +5,8 @@ import { CardMunai } from '@/components/ui/CardMunai';
 import { LimitProgressBar } from '@/components/ui/LimitProgressBar';
 import { TransactionRow } from '@/components/ui/TransactionRow';
 import { QrFullscreenModal } from '@/components/ui/QrFullscreenModal';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
 import { useTransactionStore } from '@/store/transaction.store';
@@ -56,9 +58,9 @@ export function CabinetFlPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-sm text-status-blocked">Нет активной сессии — сначала войдите или зарегистрируйтесь.</p>
-        <button type="button" onClick={() => navigate('/')} className="mt-4 rounded-2xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white">
+        <Button type="button" onClick={() => navigate('/')} className="mt-4">
           На главную
-        </button>
+        </Button>
       </div>
     );
   }
@@ -75,10 +77,10 @@ export function CabinetFlPage() {
             <h1 className="truncate text-lg font-bold text-gray-900">{user.fio}</h1>
           </div>
         </div>
-        <button type="button" onClick={handleLogout} className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-sm shadow-gray-200/60 transition-transform active:scale-95">
+        <Button type="button" variant="outline" size="sm" onClick={handleLogout} className="shrink-0 rounded-full">
           <LogOut className="h-3.5 w-3.5" />
           Выйти
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-4">
@@ -98,33 +100,35 @@ export function CabinetFlPage() {
         {myCards.length === 0 && <p className="text-sm text-gray-400">Активных карт нет.</p>}
       </div>
 
-      <button type="button" onClick={() => navigate('/card')} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 transition-transform active:scale-[0.98]">
+      <Button type="button" size="lg" onClick={() => navigate('/card')} className="w-full">
         Карта и QR-код
-      </button>
+      </Button>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">Последние заправки</h2>
-          <button type="button" onClick={() => navigate('/cabinet/history')} className="text-xs font-semibold text-navy-600">
+          <Button type="button" variant="link" size="sm" onClick={() => navigate('/cabinet/history')} className="h-auto p-0">
             Вся история →
-          </button>
+          </Button>
         </div>
         {recentTransactions.length > 0 ? (
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-sm shadow-gray-200/60">
+          <Card className="gap-0 divide-y divide-gray-100 overflow-hidden p-0">
             {recentTransactions.map((t) => {
               const card = myCards.find((c) => c.id === t.cardId);
               return <TransactionRow key={t.id} transaction={t} cardLabel={card ? CARD_TYPE_LABEL[card.cardType] : ''} />;
             })}
-          </div>
+          </Card>
         ) : (
-          <p className="rounded-2xl bg-white p-4 text-center text-sm text-gray-400 shadow-sm shadow-gray-200/60">Заправок пока не было.</p>
+          <Card>
+            <p className="text-center text-sm text-gray-400">Заправок пока не было.</p>
+          </Card>
         )}
       </div>
 
-      <button type="button" onClick={handleReset} className="flex w-full items-center justify-center gap-2 py-2 text-xs font-medium text-gray-400">
+      <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="w-full text-gray-400">
         <RotateCcw className="h-3.5 w-3.5" />
         Сбросить демо-данные
-      </button>
+      </Button>
 
       {expandedCard && (
         <QrFullscreenModal

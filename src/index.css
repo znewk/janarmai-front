@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /*
  * Design tokens — палитра JanarmAI (ТЗ раздел 8.1):
@@ -35,9 +36,68 @@
   --color-limit-normal: var(--color-navy-500);
   --color-limit-warning: var(--color-orange-500);
 
-  /* Статусы блока «Интеллектуальный контроль» (8.5): легально / блокировка */
+  /* Статусы блока «Интеллектуальный контроль» (8.5) и риск-тиры кейсов (Analytics Deep Dive 2.2): ok/warning/blocked = Low/Medium/High */
   --color-status-ok: #16a34a;
+  --color-status-warning: #f59e0b;
   --color-status-blocked: #dc2626;
+}
+
+/*
+ * shadcn/ui — семантические токены поверх бренд-палитры JanarmAI (не отдельная тема, а маппинг
+ * тех же navy/orange/gray значений на стандартные имена shadcn: primary=orange (кнопки ключевого
+ * действия, ТЗ 8.1), secondary/accent=navy-50 (подложки), muted=серые из дефолтной палитры
+ * Tailwind (остаётся доступна параллельно с кастомной темой — @theme в Tailwind v4 расширяет,
+ * а не заменяет дефолт). --radius=1rem — совпадает с уже устоявшимся rounded-2xl по всему проекту,
+ * поэтому Button/Card/Input из shadcn визуально не спорят с существующими карточками.
+ * Тёмная тема не подключалась — ТЗ 8.1 требует белый базовый фон контента везде без переключателя.
+ */
+:root {
+  --radius: 1rem;
+  --background: #ffffff;
+  --foreground: var(--color-navy-900);
+  --card: #ffffff;
+  --card-foreground: var(--color-navy-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-navy-900);
+  --primary: var(--color-orange-500);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-navy-50);
+  --secondary-foreground: var(--color-navy-700);
+  --muted: var(--color-gray-100);
+  --muted-foreground: var(--color-gray-500);
+  --accent: var(--color-navy-50);
+  --accent-foreground: var(--color-navy-700);
+  --destructive: var(--color-status-blocked);
+  --destructive-foreground: #ffffff;
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-200);
+  --ring: var(--color-navy-400);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
@@ -50,6 +110,10 @@
   body {
     @apply bg-white text-navy-900 font-sans antialiased;
     margin: 0;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
   }
 }
 

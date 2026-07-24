@@ -1,6 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const schema = z.object({
   fio: z.string().trim().min(3, 'Введите ФИО полностью'),
@@ -20,24 +23,24 @@ export function IinPhoneFormStep({ onSubmit, defaultValues }: { onSubmit: (value
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">ФИО</label>
-        <input {...register('fio')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="Иванов Иван Иванович" />
-        {errors.fio && <p className="mt-1 text-xs text-status-blocked">{errors.fio.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="fl-fio">ФИО</Label>
+        <Input id="fl-fio" {...register('fio')} placeholder="Иванов Иван Иванович" />
+        {errors.fio && <p className="text-xs text-status-blocked">{errors.fio.message}</p>}
       </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">ИИН</label>
-        <input {...register('iin')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="123456789012" inputMode="numeric" />
-        {errors.iin && <p className="mt-1 text-xs text-status-blocked">{errors.iin.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="fl-iin">ИИН</Label>
+        <Input id="fl-iin" {...register('iin')} placeholder="123456789012" inputMode="numeric" />
+        {errors.iin && <p className="text-xs text-status-blocked">{errors.iin.message}</p>}
       </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
-        <input {...register('phone')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="+77011234567" />
-        {errors.phone && <p className="mt-1 text-xs text-status-blocked">{errors.phone.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="fl-phone">Номер телефона</Label>
+        <Input id="fl-phone" {...register('phone')} placeholder="+77011234567" />
+        {errors.phone && <p className="text-xs text-status-blocked">{errors.phone.message}</p>}
       </div>
-      <button type="submit" className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
+      <Button type="submit" className="w-full">
         Продолжить
-      </button>
+      </Button>
     </form>
   );
 }

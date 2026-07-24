@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StepperStatus, type StepperStep } from '@/components/ui/StepperStatus';
+import { Button } from '@/components/ui/button';
 import { checkGbdFl, checkBmg } from '@/mocks/api';
 
 interface Props {
@@ -52,9 +53,9 @@ export function GbdFlBmgStep({ iin, fio, phone, onSuccess, onRetry }: Props) {
     <div className="space-y-6">
       <StepperStatus steps={steps} />
       {failed && (
-        <button type="button" onClick={onRetry} className="w-full rounded-2xl bg-white py-3 font-semibold text-gray-700 shadow-sm shadow-gray-200/60">
+        <Button type="button" variant="outline" onClick={onRetry} className="w-full">
           Ввести данные заново
-        </button>
+        </Button>
       )}
     </div>
   );

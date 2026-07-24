@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
-import { geoMercator } from 'd3-geo';
+import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+import { geoMercator, geoCentroid } from 'd3-geo';
 import type { RegionConsumptionPoint } from '@/mocks/seed';
-import { chartSequentialNavy } from '@/theme/colors';
+import { RISK_TIER_COLOR, RISK_TIER_LABEL } from '@/lib/riskTier';
+import { RiskBadge } from './RiskBadge';
 import kzGeo from '@/mocks/geo/kz-oblasts.json';
 
 export interface KzHeatMapProps {
@@ -12,12 +13,8 @@ export interface KzHeatMapProps {
 const MAP_WIDTH = 800;
 const MAP_HEIGHT = 480;
 const MAP_PADDING = 16;
-
-function bucketColor(value: number, min: number, max: number): string {
-  const ratio = max > min ? (value - min) / (max - min) : 0;
-  const index = Math.min(chartSequentialNavy.length - 1, Math.floor(ratio * chartSequentialNavy.length));
-  return chartSequentialNavy[index];
-}
+const MARKER_MIN_RADIUS = 3;
+const MARKER_MAX_RADIUS = 11;
 
 /**
  * Проекция, автоматически вписывающая фактическую геометрию kz-oblasts.json в размер холста —
@@ -47,17 +44,36 @@ function useKzProjection() {
   );
 }
 
+/** Радиус маркера города, линейно от объёма (consumptionIndex как прокси) — в диапазоне [MIN, MAX]px. */
+function markerRadius(value: number, min: number, max: number): number {
+  const ratio = max > min ? (value - min) / (max - min) : 0;
+  return MARKER_MIN_RADIUS + ratio * (MARKER_MAX_RADIUS - MARKER_MIN_RADIUS);
+}
+
 /**
- * A-04 — интерактивная тепловая карта областей РК: заливка по индексу потребления, акцент на приграничные аномалии (ТЗ 6, 8.5).
- * Границы: geokz (github.com/arodionoff/geokz, CC BY 4.0), на основе UN OCHA COD-AB Kazakhstan, актуализация 2024 г. (20 регионов).
+ * A-04 — интерактивная тепловая карта областей РК: заливка по severity (риск-тир региона, не
+ * интенсивность потребления) + слой маркеров-городов, размер = объём (Analytics Deep Dive 4.2).
+ * Точка маркера — геометрический центроид полигона региона (в проекте нет датасета координат
+ * областных центров — центроид достаточен для демо, см. допущение в OPEN_QUESTIONS.md).
+ * Границы: geokz (github.com/arodionoff/geokz, CC BY 4.0), на основе UN OCHA COD-AB Kazakhstan.
  */
 export function KzHeatMap({ data }: KzHeatMapProps) {
   const [hovered, setHovered] = useState<RegionConsumptionPoint | null>(null);
-  const byName = new Map(data.map((r) => [r.name, r]));
-  const values = data.map((r) => r.consumptionIndex);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const byName = useMemo(() => new Map(data.map((r) => [r.name, r])), [data]);
+  const volumeValues = data.map((r) => r.consumptionIndex);
+  const volumeMin = Math.min(...volumeValues);
+  const volumeMax = Math.max(...volumeValues);
   const projection = useKzProjection();
+
+  const geoFeatures = (kzGeo as unknown as { features: GeoJSON.Feature[] }).features;
+  const centroids = useMemo(
+    () =>
+      geoFeatures.map((feature) => ({
+        name: (feature.properties as { name: string }).name,
+        centroid: geoCentroid(feature as never) as [number, number],
+      })),
+    [geoFeatures],
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr]">
@@ -69,7 +85,7 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
             {({ geographies }) =>
               geographies.map((geo) => {
                 const region = byName.get(geo.properties.name as string);
-                const fill = region ? bucketColor(region.consumptionIndex, min, max) : '#e5e9f0';
+                const fill = region ? RISK_TIER_COLOR[region.riskTier] : '#e5e9f0';
                 return (
                   <Geography
                     key={geo.rsmKey}
@@ -77,36 +93,59 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
                     onMouseEnter={() => region && setHovered(region)}
                     onMouseLeave={() => setHovered(null)}
                     style={{
-                      default: { fill, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
-                      hover: { fill: '#e05f0a', stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
-                      pressed: { fill: '#e05f0a', stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
+                      default: { fill, fillOpacity: 0.55, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
+                      hover: { fill, fillOpacity: 0.85, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
+                      pressed: { fill, fillOpacity: 0.85, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
                     }}
                   />
                 );
               })
             }
           </Geographies>
+          {centroids.map(({ name, centroid }) => {
+            const region = byName.get(name);
+            if (!region) return null;
+            return (
+              <Marker key={name} coordinates={centroid}>
+                <circle
+                  r={markerRadius(region.consumptionIndex, volumeMin, volumeMax)}
+                  fill={RISK_TIER_COLOR[region.riskTier]}
+                  stroke="#fcfcfb"
+                  strokeWidth={1.25}
+                  onMouseEnter={() => setHovered(region)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              </Marker>
+            );
+          })}
         </ComposableMap>
-        <div className="mt-2 flex items-center gap-2 px-2 text-xs text-navy-400">
-          <span>Меньше потребление</span>
-          <span className="flex h-2 flex-1 overflow-hidden rounded-full">
-            {chartSequentialNavy.map((c) => (
-              <span key={c} className="flex-1" style={{ backgroundColor: c }} />
-            ))}
+        <div className="mt-2 flex flex-wrap items-center gap-3 px-2 text-xs text-navy-400">
+          <span className="font-medium text-navy-500">Риск-уровень:</span>
+          {(['low', 'medium', 'high'] as const).map((tier) => (
+            <span key={tier} className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: RISK_TIER_COLOR[tier] }} />
+              {RISK_TIER_LABEL[tier]}
+            </span>
+          ))}
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full border border-navy-300" />
+            размер = объём
           </span>
-          <span>Больше</span>
         </div>
       </div>
 
       <div className="rounded-xl border border-navy-100 bg-white p-4">
         {hovered ? (
           <div>
-            <p className="font-semibold text-navy-900">{hovered.name}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-semibold text-navy-900">{hovered.name}</p>
+              <RiskBadge tier={hovered.riskTier} score={hovered.riskScore} />
+            </div>
             <p className="mt-2 text-sm text-navy-500">
-              Индекс потребления: <span className="font-semibold text-navy-900">{hovered.consumptionIndex}</span>
+              Индекс потребления (объём): <span className="font-semibold text-navy-900">{hovered.consumptionIndex}</span>
             </p>
             <p className="text-sm text-navy-500">
-              Аномалия: <span className="font-semibold text-navy-900">{hovered.anomalyScore}</span>
+              Доля нерезидентов: <span className="font-semibold text-navy-900">{hovered.nonresidentSharePct}%</span>
             </p>
             {hovered.isBorderRegion && (
               <span className="mt-2 inline-block rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
@@ -115,7 +154,7 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
             )}
           </div>
         ) : (
-          <p className="text-sm text-navy-400">Наведите на область, чтобы увидеть показатели.</p>
+          <p className="text-sm text-navy-400">Наведите на область или маркер, чтобы увидеть показатели.</p>
         )}
       </div>
     </div>

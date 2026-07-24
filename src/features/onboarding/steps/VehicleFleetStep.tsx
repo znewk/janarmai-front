@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { VehicleCategory } from '@/types/entities';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export interface FleetVehicleDraft {
   grnz: string;
@@ -31,54 +35,46 @@ export function VehicleFleetStep({ onComplete }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="space-y-3 rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">ГРНЗ</label>
-          <input value={grnz} onChange={(e) => setGrnz(e.target.value)} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="777DDD01" />
+      <Card>
+        <div className="space-y-1.5">
+          <Label htmlFor="fleet-grnz">ГРНЗ</Label>
+          <Input id="fleet-grnz" value={grnz} onChange={(e) => setGrnz(e.target.value)} placeholder="777DDD01" />
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Категория</label>
+        <div className="space-y-1.5">
+          <Label>Категория</Label>
           <div className="flex gap-2">
             {(['passenger', 'truck'] as VehicleCategory[]).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={`flex-1 rounded-xl border py-2 text-sm ${category === c ? 'border-navy-600 bg-navy-600 text-white' : 'border-gray-200 text-gray-700'}`}
-              >
+              <Button key={c} type="button" variant={category === c ? 'default' : 'outline'} onClick={() => setCategory(c)} className="flex-1 rounded-xl">
                 {CATEGORY_LABEL[c]}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
-        <button type="button" onClick={addVehicle} disabled={!grnz.trim()} className="w-full rounded-xl bg-gray-100 py-2 text-sm font-semibold text-gray-700 disabled:opacity-40">
+        <Button type="button" variant="secondary" onClick={addVehicle} disabled={!grnz.trim()} className="w-full">
           Добавить ТС
-        </button>
-      </div>
+        </Button>
+      </Card>
 
       {vehicles.length > 0 && (
         <ul className="space-y-2">
           {vehicles.map((v, i) => (
-            <li key={i} className="flex items-center justify-between rounded-2xl bg-white px-3 py-2.5 text-sm shadow-sm shadow-gray-200/60">
-              <span>
-                {v.grnz} · {CATEGORY_LABEL[v.category]}
-              </span>
-              <button type="button" onClick={() => removeVehicle(i)} aria-label="Удалить" className="text-gray-300 hover:text-status-blocked">
-                <Trash2 className="h-4 w-4" />
-              </button>
+            <li key={i}>
+              <Card className="flex-row items-center justify-between p-3">
+                <span className="text-sm">
+                  {v.grnz} · {CATEGORY_LABEL[v.category]}
+                </span>
+                <button type="button" onClick={() => removeVehicle(i)} aria-label="Удалить" className="text-gray-300 hover:text-status-blocked">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </Card>
             </li>
           ))}
         </ul>
       )}
 
-      <button
-        type="button"
-        disabled={vehicles.length === 0}
-        onClick={() => onComplete(vehicles)}
-        className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40"
-      >
+      <Button type="button" disabled={vehicles.length === 0} onClick={() => onComplete(vehicles)} className="w-full">
         Продолжить ({vehicles.length})
-      </button>
+      </Button>
     </div>
   );
 }

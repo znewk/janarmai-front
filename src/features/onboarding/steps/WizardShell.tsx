@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export interface WizardShellProps {
   title: string;
@@ -15,14 +16,9 @@ export function WizardShell({ title, stepIndex, stepCount, onBack, children }: W
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/95 px-4 py-3 backdrop-blur">
         {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label="Назад"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-navy-700 shadow-sm shadow-gray-200/60 transition-transform active:scale-90"
-          >
+          <Button type="button" variant="outline" size="icon" onClick={onBack} aria-label="Назад" className="shrink-0">
             <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
-          </button>
+          </Button>
         ) : (
           <span className="w-9" />
         )}

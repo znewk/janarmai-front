@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { FileScan, ScanFace } from 'lucide-react';
 import { verifyLiveness } from '@/mocks/api';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   passportNumber: string;
@@ -23,22 +26,17 @@ export function PassportLivenessStep({ passportNumber, onPassportNumberChange, o
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Номер паспорта</label>
-        <input
-          value={passportNumber}
-          onChange={(e) => onPassportNumberChange(e.target.value)}
-          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm"
-          placeholder="P1234567"
-        />
-        <p className="mt-1 text-xs text-gray-400">Демо: номер с «DUP» — дубликат паспорта, с «NF» — личность не найдена в «Беркут»</p>
+      <div className="space-y-1.5">
+        <Label htmlFor="passport-number">Номер паспорта</Label>
+        <Input id="passport-number" value={passportNumber} onChange={(e) => onPassportNumberChange(e.target.value)} placeholder="P1234567" />
+        <p className="text-xs text-gray-400">Демо: номер с «DUP» — дубликат паспорта, с «NF» — личность не найдена в «Беркут»</p>
       </div>
 
       <button
         type="button"
         onClick={() => setMrzScanned(true)}
         disabled={mrzScanned || !passportNumber}
-        className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm shadow-gray-200/60 disabled:opacity-60"
+        className="flex w-full items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-sm shadow-gray-200/60 disabled:opacity-60"
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-600">
           <FileScan className="h-5 w-5 text-white" />
@@ -50,7 +48,7 @@ export function PassportLivenessStep({ passportNumber, onPassportNumberChange, o
         type="button"
         onClick={runLiveness}
         disabled={!mrzScanned || livenessDone || checkingLiveness}
-        className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm shadow-gray-200/60 disabled:opacity-60"
+        className="flex w-full items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-sm shadow-gray-200/60 disabled:opacity-60"
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-600">
           <ScanFace className="h-5 w-5 text-white" />
@@ -60,14 +58,9 @@ export function PassportLivenessStep({ passportNumber, onPassportNumberChange, o
         </span>
       </button>
 
-      <button
-        type="button"
-        onClick={onComplete}
-        disabled={!livenessDone}
-        className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30 disabled:opacity-40"
-      >
+      <Button type="button" onClick={onComplete} disabled={!livenessDone} className="w-full">
         Продолжить
-      </button>
+      </Button>
     </div>
   );
 }

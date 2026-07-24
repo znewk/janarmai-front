@@ -3,6 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { OtpInput } from '@/components/ui/OtpInput';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { signEcp } from '@/mocks/api';
 
 const schema = z.object({
@@ -33,24 +36,24 @@ export function EcpBinStep({ onComplete }: Props) {
   if (!formValues) {
     return (
       <form className="space-y-4" onSubmit={handleSubmit(setFormValues)}>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">БИН компании</label>
-          <input {...register('bin')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="123456789012" inputMode="numeric" />
-          {errors.bin && <p className="mt-1 text-xs text-status-blocked">{errors.bin.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="ecp-bin">БИН компании</Label>
+          <Input id="ecp-bin" {...register('bin')} placeholder="123456789012" inputMode="numeric" />
+          {errors.bin && <p className="text-xs text-status-blocked">{errors.bin.message}</p>}
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">ФИО представителя (администратора автопарка)</label>
-          <input {...register('directorFio')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="Иванов Иван Иванович" />
-          {errors.directorFio && <p className="mt-1 text-xs text-status-blocked">{errors.directorFio.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="ecp-director-fio">ФИО представителя (администратора автопарка)</Label>
+          <Input id="ecp-director-fio" {...register('directorFio')} placeholder="Иванов Иван Иванович" />
+          {errors.directorFio && <p className="text-xs text-status-blocked">{errors.directorFio.message}</p>}
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Номер телефона</label>
-          <input {...register('phone')} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm" placeholder="+77011234567" />
-          {errors.phone && <p className="mt-1 text-xs text-status-blocked">{errors.phone.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="ecp-phone">Номер телефона</Label>
+          <Input id="ecp-phone" {...register('phone')} placeholder="+77011234567" />
+          {errors.phone && <p className="text-xs text-status-blocked">{errors.phone.message}</p>}
         </div>
-        <button type="submit" className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
+        <Button type="submit" className="w-full">
           Продолжить
-        </button>
+        </Button>
       </form>
     );
   }

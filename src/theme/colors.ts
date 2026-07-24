@@ -31,8 +31,16 @@ export const orange = {
   950: '#431805',
 } as const;
 
+/**
+ * Статусная триада риск-тиров (Analytics Deep Dive, разд. 2.2/4.2/4.3) — `ok`/`blocked` уже были
+ * в проекте (лимит/легальность); `warning` (амбер) добавлен для Medium-тира и провалидирован
+ * dataviz-скиллом вместе с ok/blocked как триада: `node validate_palette.js "#16a34a,#f59e0b,#dc2626"`
+ * — ALL CHECKS PASS (CVD-разделение в допустимой 6–8 зоне легально при вторичном кодировании —
+ * везде используется с иконкой/текстовой подписью, не только цветом, см. RiskBadge.tsx).
+ */
 export const status = {
   ok: '#16a34a',
+  warning: '#f59e0b',
   blocked: '#dc2626',
 } as const;
 

@@ -3,6 +3,9 @@ import { Check, Loader2 } from 'lucide-react';
 import type { VehicleCategory } from '@/types/entities';
 import type { FleetVehicleDraft } from './VehicleFleetStep';
 import { checkGbdFl } from '@/mocks/api';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export interface DriverAssignment {
   fio: string;
@@ -43,38 +46,22 @@ export function DriverAssignStep({ vehicles, onComplete }: Props) {
     <div className="space-y-4">
       <p className="text-xs text-gray-400">Необязательный шаг — водитель используется только для истории «кто заправлял»</p>
       {vehicles.map((v, i) => (
-        <div key={i} className="space-y-2 rounded-2xl bg-white p-3 shadow-sm shadow-gray-200/60">
+        <Card key={i}>
           <p className="text-xs font-medium text-gray-500">
             {v.grnz} · {CATEGORY_LABEL[v.category]}
           </p>
-          <input
-            value={rows[i].fio}
-            onChange={(e) => updateRow(i, { fio: e.target.value, checked: false })}
-            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm"
-            placeholder="ФИО водителя (опционально)"
-          />
+          <Input value={rows[i].fio} onChange={(e) => updateRow(i, { fio: e.target.value, checked: false })} placeholder="ФИО водителя (опционально)" />
           <div className="flex gap-2">
-            <input
-              value={rows[i].iin}
-              onChange={(e) => updateRow(i, { iin: e.target.value, checked: false })}
-              className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm"
-              placeholder="ИИН водителя"
-              inputMode="numeric"
-            />
-            <button
-              type="button"
-              onClick={() => checkDriver(i)}
-              disabled={!rows[i].fio || !rows[i].iin || rows[i].checking}
-              className="flex w-24 items-center justify-center gap-1 rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 disabled:opacity-40"
-            >
+            <Input value={rows[i].iin} onChange={(e) => updateRow(i, { iin: e.target.value, checked: false })} placeholder="ИИН водителя" inputMode="numeric" className="flex-1" />
+            <Button type="button" variant="secondary" size="sm" onClick={() => checkDriver(i)} disabled={!rows[i].fio || !rows[i].iin || rows[i].checking} className="w-24">
               {rows[i].checking ? <Loader2 className="h-4 w-4 animate-spin" /> : rows[i].checked ? <Check className="h-4 w-4 text-status-ok" /> : 'Проверить'}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       ))}
-      <button type="button" onClick={handleContinue} className="w-full rounded-2xl bg-orange-500 py-3 font-semibold text-white shadow-sm shadow-orange-500/30">
+      <Button type="button" onClick={handleContinue} className="w-full">
         Продолжить
-      </button>
+      </Button>
     </div>
   );
 }

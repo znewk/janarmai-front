@@ -16,7 +16,7 @@ export function ChannelCard({ icon: Icon, title, subtitle, onClick, disabled = f
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm shadow-gray-200/60 transition ${
+      className={`flex w-full items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm shadow-gray-200/60 transition ${
         disabled ? 'cursor-not-allowed opacity-40' : 'active:scale-[0.99]'
       }`}
     >
