@@ -15,7 +15,7 @@ async function run() {
   console.log('checkGbdUl success:', await checkGbdUl('123456789012'));
   console.log('checkAdminCredentials success:', await checkAdminCredentials('kmg.analyst', 'demo1234'));
   console.log('checkAdminCredentials error:', await checkAdminCredentials('kmg.analyst', 'wrong'));
-  console.log(`\nTotal elapsed ${Date.now() - started}ms for 13 sequential calls (искусственная задержка 300-1500мс каждая)`);
+  console.log(`\nTotal elapsed ${Date.now() - started}ms for 13 sequential calls (искусственная задержка 900-2200мс каждая)`);
 }
 
 run();
