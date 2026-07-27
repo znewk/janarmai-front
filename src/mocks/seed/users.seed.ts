@@ -20,7 +20,7 @@ export const usersSeed: User[] = [
     id: 'user_fl_egov_multi',
     type: 'fl',
     residency: 'resident',
-    fio: 'Байжанов Ерлан Толегенович',
+    fio: 'Асанов Ерлан Толегенович',
     phone: '+77011234509',
     channel: 'egov',
     iin: '880101300111',

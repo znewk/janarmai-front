@@ -6,17 +6,18 @@ import { ManualCompanyStep, type ManualCompanyFormValues } from './steps/ManualC
 import { PassportLivenessStep } from './steps/PassportLivenessStep';
 import { BerkutStep } from './steps/BerkutStep';
 import { VehicleFleetStep, type FleetVehicleDraft } from './steps/VehicleFleetStep';
-import { DriverAssignStep, type DriverAssignment } from './steps/DriverAssignStep';
 import { generateDemoFio } from '@/lib/demoIdentity';
 import { finalizeUlRegistration } from './registrationActions';
 import { Button } from '@/components/ui/button';
 
-type Step = 'company' | 'passport' | 'berkut' | 'rejected' | 'fleet' | 'drivers';
-const STEP_ORDER: Step[] = ['company', 'passport', 'berkut', 'fleet', 'drivers'];
+type Step = 'company' | 'passport' | 'berkut' | 'rejected' | 'fleet';
+const STEP_ORDER: Step[] = ['company', 'passport', 'berkut', 'fleet'];
 
 /**
- * Ветка ЮЛ-нерезидент — S-11..S-14 по аналогии с ЮЛ-резидентом, верификация директора переиспользует
+ * Ветка ЮЛ-нерезидент — S-11..S-13 по аналогии с ЮЛ-резидентом, верификация директора переиспользует
  * S-06/S-07 (ТЗ 4.5). Согласие на ПД получено на S-00.
+ * Шаг привязки водителя (ИИН РК) намеренно пропущен: у иностранной компании нет казахстанских ИИН
+ * для своих водителей — ТС автопарка регистрируются без водителя (см. OPEN_QUESTIONS.md).
  */
 export function CompanyForeignRegisterPage() {
   const navigate = useNavigate();
@@ -25,11 +26,10 @@ export function CompanyForeignRegisterPage() {
   const [passportNumber, setPassportNumber] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [directorFio] = useState(() => generateDemoFio());
-  const [vehicles, setVehicles] = useState<FleetVehicleDraft[]>([]);
 
   const stepIndex = STEP_ORDER.indexOf(step === 'rejected' ? 'berkut' : step);
 
-  const handleDriversComplete = (assignments: (DriverAssignment | null)[]) => {
+  const handleFleetComplete = (fleetVehicles: FleetVehicleDraft[]) => {
     if (!companyInfo) return;
     finalizeUlRegistration({
       residency: 'nonresident',
@@ -38,12 +38,7 @@ export function CompanyForeignRegisterPage() {
       phone: companyInfo.phone,
       directorFio,
       directorIdentifier: passportNumber,
-      vehicles: vehicles.map((v, i) => ({
-        grnz: v.grnz,
-        category: v.category,
-        driverFio: assignments[i]?.fio,
-        driverIin: assignments[i]?.iin,
-      })),
+      vehicles: fleetVehicles.map((v) => ({ grnz: v.grnz, category: v.category })),
     });
     navigate('/cabinet', { state: { justIssued: true } });
   };
@@ -101,16 +96,7 @@ export function CompanyForeignRegisterPage() {
         </div>
       )}
 
-      {step === 'fleet' && (
-        <VehicleFleetStep
-          onComplete={(fleetVehicles) => {
-            setVehicles(fleetVehicles);
-            setStep('drivers');
-          }}
-        />
-      )}
-
-      {step === 'drivers' && <DriverAssignStep vehicles={vehicles} onComplete={handleDriversComplete} />}
+      {step === 'fleet' && <VehicleFleetStep onComplete={handleFleetComplete} />}
     </WizardShell>
   );
 }
