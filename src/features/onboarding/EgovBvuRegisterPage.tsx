@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { WizardShell } from './steps/WizardShell';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
-import { LimitResultStep } from './steps/LimitResultStep';
+import { LimitResultStep, type ResultCardSpec } from './steps/LimitResultStep';
 import { generateDemoFio, generateDemoIin, generateDemoPhone } from '@/lib/demoIdentity';
 import { deriveFlCardSpecs } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
@@ -36,7 +36,7 @@ export function EgovBvuRegisterPage() {
       phone: identity.phone,
       channel: 'egov',
       iin: identity.iin,
-      vehicle: vehicleResult?.vehicle,
+      vehicles: vehicleResult?.vehicles,
     });
     navigate('/card', { state: { justIssued: true } });
   };
@@ -93,8 +93,8 @@ export function EgovBvuRegisterPage() {
       {step === 'result' &&
         vehicleResult &&
         (() => {
-          const spec = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicle ? [vehicleResult.category] : [] })[0];
-          return <LimitResultStep category={vehicleResult.category} dailyLimitL={spec.dailyLimitL} priceEligible={spec.priceEligible} onContinue={handleIssueCard} />;
+          const specs: ResultCardSpec[] = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicles.map((v) => v.category) });
+          return <LimitResultStep specs={specs} onContinue={handleIssueCard} />;
         })()}
     </WizardShell>
   );

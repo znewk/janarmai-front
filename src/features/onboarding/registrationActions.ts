@@ -12,8 +12,8 @@ interface FlRegistrationParams {
   channel: Channel;
   iin?: string;
   passportNumber?: string;
-  /** Собственное ТС — не более одного на демо-сценарий S-08 (в отличие от автопарка ЮЛ, S-13). */
-  vehicle?: { grnz: string; category: VehicleCategory };
+  /** Собственные ТС — обычно 0–1, но может быть 2 (легковая + грузовая одновременно, ТЗ S-10). */
+  vehicles?: { grnz: string; category: VehicleCategory }[];
 }
 
 /**
@@ -36,29 +36,32 @@ export function finalizeFlRegistration(params: FlRegistrationParams): { userId: 
     createdAt: new Date().toISOString(),
   });
 
-  let vehicleId: string | undefined;
-  if (params.vehicle) {
-    vehicleId = generateId('veh');
+  const vehicles = params.vehicles ?? [];
+  const truckVehicleIds: string[] = [];
+  for (const vehicle of vehicles) {
+    const vehicleId = generateId('veh');
     useUserStore.getState().addVehicle({
       id: vehicleId,
       ownerKind: 'user',
       ownerId: userId,
-      grnz: params.vehicle.grnz,
-      category: params.vehicle.category,
+      grnz: vehicle.grnz,
+      category: vehicle.category,
       active: true,
     });
+    if (vehicle.category === 'truck') truckVehicleIds.push(vehicleId);
   }
 
   const specs = deriveFlCardSpecs({
     residency: params.residency,
-    vehicleCategories: params.vehicle ? [params.vehicle.category] : [],
+    vehicleCategories: vehicles.map((v) => v.category),
   });
   const maskedIdentifier = maskIdentifier(params.iin ?? params.passportNumber);
   const cards: Card[] = [];
+  let truckIdx = 0;
   for (const spec of specs) {
     const card = materializeCard(spec, {
       userId: spec.ownerKind === 'user' ? userId : undefined,
-      vehicleId: spec.ownerKind === 'vehicle' ? vehicleId : undefined,
+      vehicleId: spec.ownerKind === 'vehicle' ? truckVehicleIds[truckIdx++] : undefined,
       maskedIdentifier,
     });
     useCardStore.getState().addCard(card);

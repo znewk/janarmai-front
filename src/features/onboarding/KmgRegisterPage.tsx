@@ -6,7 +6,7 @@ import { ChannelCard } from '@/components/ui/ChannelCard';
 import { IinPhoneFormStep, type IinPhoneFormValues } from './steps/IinPhoneFormStep';
 import { GbdFlBmgStep } from './steps/GbdFlBmgStep';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
-import { LimitResultStep } from './steps/LimitResultStep';
+import { LimitResultStep, type ResultCardSpec } from './steps/LimitResultStep';
 import { deriveFlCardSpecs } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
 
@@ -41,7 +41,7 @@ export function KmgRegisterPage() {
       phone: identity.phone,
       channel: 'kmg',
       iin: identity.iin,
-      vehicle: vehicleResult?.vehicle,
+      vehicles: vehicleResult?.vehicles,
     });
     navigate('/card', { state: { justIssued: true } });
   };
@@ -89,8 +89,8 @@ export function KmgRegisterPage() {
       {step === 'result' &&
         vehicleResult &&
         (() => {
-          const spec = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicle ? [vehicleResult.category] : [] })[0];
-          return <LimitResultStep category={vehicleResult.category} dailyLimitL={spec.dailyLimitL} priceEligible={spec.priceEligible} onContinue={handleIssueCard} />;
+          const specs: ResultCardSpec[] = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicles.map((v) => v.category) });
+          return <LimitResultStep specs={specs} onContinue={handleIssueCard} />;
         })()}
     </WizardShell>
   );

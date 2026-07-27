@@ -25,27 +25,45 @@ async function run() {
   if (mvdErr.status !== 'error' || mvdErr.errorCode !== 'MVD_CHECK_FAILED') throw new Error('FAIL: ожидалась ошибка MVD_CHECK_FAILED');
   const mvdNoVehicle = await checkMvdRegistry('900101300120');
   console.log('checkMvdRegistry(ИИН на 0, нет ТС) ->', mvdNoVehicle.status, mvdNoVehicle.status === 'success' ? mvdNoVehicle.data : '');
-  if (mvdNoVehicle.status !== 'success' || mvdNoVehicle.data.vehicle !== null || !mvdNoVehicle.data.insured) throw new Error('FAIL: ожидалось «нет ТС, есть ОГПО»');
+  if (mvdNoVehicle.status !== 'success' || mvdNoVehicle.data.vehicles.length !== 0 || !mvdNoVehicle.data.insured) throw new Error('FAIL: ожидалось «нет ТС, есть ОГПО»');
   const mvdPassenger = await checkMvdRegistry('900101300124');
   console.log('checkMvdRegistry(ИИН на 4, легковая) ->', mvdPassenger.status, mvdPassenger.status === 'success' ? mvdPassenger.data : '');
-  if (mvdPassenger.status !== 'success' || mvdPassenger.data.vehicle?.category !== 'passenger') throw new Error('FAIL: ожидалась легковая на пользователе');
+  if (mvdPassenger.status !== 'success' || mvdPassenger.data.vehicles.length !== 1 || mvdPassenger.data.vehicles[0].category !== 'passenger') throw new Error('FAIL: ожидалась легковая на пользователе');
+  const mvdBoth = await checkMvdRegistry('900101300125');
+  console.log('checkMvdRegistry(ИИН на 5, легковая+грузовая) ->', mvdBoth.status, mvdBoth.status === 'success' ? mvdBoth.data : '');
+  if (mvdBoth.status !== 'success' || mvdBoth.data.vehicles.length !== 2) throw new Error('FAIL: ожидались сразу 2 ТС (легковая+грузовая) — правка по замечанию ПМ (Адлет), «всегда только грузовая»');
+  if (!mvdBoth.data.vehicles.some((v) => v.category === 'passenger') || !mvdBoth.data.vehicles.some((v) => v.category === 'truck')) throw new Error('FAIL: ожидались разные категории ТС');
 
   console.log('\n=== Ветка 1: ФЛ-резидент eGov/БВУ (легковая) ===');
-  const r1 = finalizeFlRegistration({ residency: 'resident', fio: 'Демо Тест1', phone: '+77011111111', channel: 'egov', iin: '900101300121', vehicle: { grnz: '001AAA02', category: 'passenger' } });
+  const r1 = finalizeFlRegistration({ residency: 'resident', fio: 'Демо Тест1', phone: '+77011111111', channel: 'egov', iin: '900101300121', vehicles: [{ grnz: '001AAA02', category: 'passenger' }] });
   console.log('карт:', r1.cards.length, r1.cards.map((c) => `${c.cardType}:${c.dailyLimitL}л`));
   if (r1.cards.length !== 1 || r1.cards[0].dailyLimitL !== 100) throw new Error('FAIL: ожидалась 1 карта 100л');
   console.log('автологин после регистрации (правки ПМ, п.5):', useUserStore.getState().currentUserId === r1.userId);
   if (useUserStore.getState().currentUserId !== r1.userId) throw new Error('FAIL: регистрация должна сразу устанавливать сессию — иначе /card покажет «нет активной сессии»');
 
-  console.log('\n=== Ветка 2: ФЛ-резидент КМГ (грузовая, полный путь + негативный сценарий) ===');
+  console.log('\n=== Ветка 2: ФЛ-резидент КМГ (легковая+грузовая одновременно, полный путь + негативный сценарий) ===');
   const gbdErr = await checkGbdFl({ iin: '900101300129', fio: 'X' });
   console.log('checkGbdFl(IIN на 9) ->', gbdErr.status, gbdErr.status === 'error' ? gbdErr.errorCode : '');
   if (gbdErr.status !== 'error') throw new Error('FAIL: ожидалась ошибка ГБД ФЛ');
   const bmgErr = await checkBmg({ iin: '900101300127', phone: 'x' });
   console.log('checkBmg(IIN на 7) ->', bmgErr.status, bmgErr.status === 'error' ? bmgErr.errorCode : '');
-  const r2 = finalizeFlRegistration({ residency: 'resident', fio: 'Демо Тест2', phone: '+77022222222', channel: 'kmg', iin: '900101300122', vehicle: { grnz: '450CCC02', category: 'truck' } });
+  const r2 = finalizeFlRegistration({
+    residency: 'resident',
+    fio: 'Демо Тест2',
+    phone: '+77022222222',
+    channel: 'kmg',
+    iin: '900101300125',
+    vehicles: [
+      { grnz: '450AAA02', category: 'passenger' },
+      { grnz: 'A450CC02', category: 'truck' },
+    ],
+  });
   console.log('карт:', r2.cards.length, r2.cards.map((c) => `${c.cardType}:${c.dailyLimitL}л:vehicleId=${c.vehicleId}`));
-  if (r2.cards.length !== 1 || r2.cards[0].dailyLimitL !== 300 || r2.cards[0].ownerKind !== 'vehicle') throw new Error('FAIL: ожидалась 1 карта 300л на ТС');
+  if (r2.cards.length !== 2) throw new Error('FAIL: ожидались 2 карты — легковая (на человеке) и грузовая (на ТС), правка по замечанию ПМ (Адлет)');
+  const truckCard2 = r2.cards.find((c) => c.cardType === 'fl_truck');
+  const passengerCard2 = r2.cards.find((c) => c.cardType === 'fl_passenger');
+  if (!truckCard2 || truckCard2.dailyLimitL !== 300 || truckCard2.ownerKind !== 'vehicle' || !truckCard2.vehicleId) throw new Error('FAIL: ожидалась карта 300л на конкретном ТС');
+  if (!passengerCard2 || passengerCard2.dailyLimitL !== 100 || passengerCard2.ownerKind !== 'user') throw new Error('FAIL: ожидалась персональная карта 100л');
 
   console.log('\n=== Ветка 3: ФЛ-иностранец (негативный сценарий Беркут + позитивный) ===');
   const berkutErr = await checkBerkut({ passportNumber: 'DUP12345' });

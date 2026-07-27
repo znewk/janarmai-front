@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { checkMvdRegistry } from '@/mocks/api';
 
 export interface VehicleCheckResult {
-  category: VehicleCategory;
-  vehicle?: { grnz: string; category: VehicleCategory };
+  /** Пусто — своего ТС нет (персональная карта без привязки к ТС); может быть 2, если на человеке и легковая, и грузовая. */
+  vehicles: { grnz: string; category: VehicleCategory }[];
 }
 
 interface Props {
@@ -30,8 +30,7 @@ export function VehicleCheckStep({ identifier, onComplete }: Props) {
         return;
       }
       setSteps([{ id: 'mvd', label: 'Проверка в базе МВД', status: 'success' }]);
-      const { vehicle } = res.data;
-      onComplete(vehicle ? { category: vehicle.category, vehicle } : { category: 'passenger' });
+      onComplete({ vehicles: res.data.vehicles });
     });
   };
 

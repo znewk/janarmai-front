@@ -34,7 +34,7 @@ export function ForeignRegisterPage() {
       phone,
       channel: 'kmg',
       passportNumber,
-      vehicle: vehicleResult?.vehicle,
+      vehicles: vehicleResult?.vehicles,
     });
     navigate('/card', { state: { justIssued: true } });
   };
@@ -104,7 +104,7 @@ export function ForeignRegisterPage() {
       )}
 
       {step === 'result' && vehicleResult && (
-        <LimitResultStep category={vehicleResult.category} dailyLimitL={null} priceEligible={false} onContinue={handleIssueCard} />
+        <LimitResultStep specs={[{ cardType: 'fl_person', dailyLimitL: null, priceEligible: false }]} onContinue={handleIssueCard} />
       )}
     </WizardShell>
   );
