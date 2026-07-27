@@ -30,3 +30,54 @@ export function randInt(rng: () => number, min: number, max: number): number {
 export function randChoice<T>(rng: () => number, items: readonly T[]): T {
   return items[Math.floor(rng() * items.length)];
 }
+
+export interface DailySeriesOptions {
+  seed: number;
+  days: number;
+  base: number;
+  weeklyAmplitude: number;
+  trendPerDay: number;
+  noiseAmplitude: number;
+  anomalyDayIndex: number;
+  anomalyMultiplier: number;
+  min?: number;
+  max?: number;
+  round?: number;
+}
+
+/** Дневной ряд с недельной сезонностью, трендом, шумом и одним выбросом — общий генератор для всех аналитических рядов. */
+export function buildDailySeries(opts: DailySeriesOptions): number[] {
+  const rng = mulberry32(opts.seed);
+  const series: number[] = [];
+  for (let day = 0; day < opts.days; day++) {
+    const weekly = opts.weeklyAmplitude * Math.sin((day / 7) * Math.PI * 2);
+    const trend = opts.trendPerDay * day;
+    const noise = randRange(rng, -opts.noiseAmplitude, opts.noiseAmplitude);
+    let value = opts.base + weekly + trend + noise;
+    if (day === opts.anomalyDayIndex) value *= opts.anomalyMultiplier;
+    if (opts.min !== undefined) value = Math.max(opts.min, value);
+    if (opts.max !== undefined) value = Math.min(opts.max, value);
+    const factor = 10 ** (opts.round ?? 0);
+    series.push(Math.round(value * factor) / factor);
+  }
+  return series;
+}
+
+export function sum(values: number[]): number {
+  return values.reduce((a, b) => a + b, 0);
+}
+export function avg(values: number[]): number {
+  return values.length === 0 ? 0 : sum(values) / values.length;
+}
+export function pctDelta(current: number, comparison: number): number {
+  return comparison === 0 ? 0 : Math.round(((current - comparison) / comparison) * 1000) / 10;
+}
+
+/** Простой детерминированный хеш строки → число, для получения независимого seed на пару (регион, марка). */
+export function hashSeed(input: string, salt: number): number {
+  let h = salt;
+  for (let i = 0; i < input.length; i++) {
+    h = (Math.imul(h ^ input.charCodeAt(i), 2654435761) >>> 0) + i;
+  }
+  return h >>> 0;
+}

@@ -1,18 +1,15 @@
-import { Ship, Gauge, Repeat, Wrench, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-import type { AnomalyTaxonomyPoint } from '@/mocks/seed';
-import type { AnomalyType } from '@/types/entities';
+import type { LucideIcon } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import type { AnomalyClassifierPoint } from '@/lib/analyticsCompute';
 import { Card } from './card';
 
-const ICON_BY_TYPE: Record<AnomalyType, typeof Ship> = {
-  export_smuggling: Ship,
-  limit_exceeded: Gauge,
-  frequent_shuttle: Repeat,
-  technical_failure: Wrench,
-};
+export interface AnomalyCategoryCardProps {
+  point: AnomalyClassifierPoint;
+  icon: LucideIcon;
+}
 
-/** Карточка категории аномалий — счётчик за период + дельта к прошлому периоду (Deep Dive 4.2, замена бинарного «Легально/Блокировка»). */
-export function AnomalyCategoryCard({ point }: { point: AnomalyTaxonomyPoint }) {
-  const Icon = ICON_BY_TYPE[point.type];
+/** Карточка категории классификатора аномалий — счётчик за период + дельта к прошлому периоду. */
+export function AnomalyCategoryCard({ point, icon: Icon }: AnomalyCategoryCardProps) {
   const delta = point.currentCount - point.priorPeriodCount;
   const DeltaIcon = delta === 0 ? Minus : delta > 0 ? ArrowUpRight : ArrowDownRight;
   const deltaClass = delta === 0 ? 'text-navy-400' : delta > 0 ? 'text-status-blocked' : 'text-status-ok';

@@ -73,7 +73,7 @@ export interface Card {
   active: boolean;
 }
 
-export type FuelType = 'ai92' | 'ai95' | 'dt';
+export type FuelType = 'ai92' | 'ai95' | 'ai98' | 'dt';
 export type PriceType = 'preferential' | 'market';
 
 export interface Transaction {

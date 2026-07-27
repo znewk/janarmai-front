@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import { geoMercator, geoCentroid } from 'd3-geo';
-import type { RegionConsumptionPoint } from '@/mocks/seed';
+import type { RegionConsumptionPoint, RegionFuelDailyFact } from '@/mocks/seed';
+import { FUEL_TYPE_LABEL } from '@/mocks/seed';
 import { RISK_TIER_COLOR, RISK_TIER_LABEL } from '@/lib/riskTier';
+import { computeRegionDetail, type DashboardFilters } from '@/lib/analyticsCompute';
 import { RiskBadge } from './RiskBadge';
 import kzGeo from '@/mocks/geo/kz-oblasts.json';
 
 export interface KzHeatMapProps {
   data: RegionConsumptionPoint[];
+  facts: RegionFuelDailyFact[];
+  filters: DashboardFilters;
 }
 
 const MAP_WIDTH = 800;
@@ -52,18 +56,24 @@ function markerRadius(value: number, min: number, max: number): number {
 
 /**
  * A-04 — интерактивная тепловая карта областей РК: заливка по severity (риск-тир региона, не
- * интенсивность потребления) + слой маркеров-городов, размер = объём (Analytics Deep Dive 4.2).
+ * интенсивность потребления) + слой маркеров-городов, размер = объём. По замечанию ПМ тултип по
+ * наведению заменён на клик + **постоянную** боковую панель (не исчезает при уходе курсора) с
+ * деталями региона — объём по маркам топлива (тонны), доля нерезидентам и доля сверх лимита,
+ * посчитанные из фактовой таблицы с учётом текущих глобальных фильтров.
  * Точка маркера — геометрический центроид полигона региона (в проекте нет датасета координат
  * областных центров — центроид достаточен для демо, см. допущение в OPEN_QUESTIONS.md).
  * Границы: geokz (github.com/arodionoff/geokz, CC BY 4.0), на основе UN OCHA COD-AB Kazakhstan.
  */
-export function KzHeatMap({ data }: KzHeatMapProps) {
-  const [hovered, setHovered] = useState<RegionConsumptionPoint | null>(null);
+export function KzHeatMap({ data, facts, filters }: KzHeatMapProps) {
+  const [selected, setSelected] = useState<string | null>(null);
   const byName = useMemo(() => new Map(data.map((r) => [r.name, r])), [data]);
   const volumeValues = data.map((r) => r.consumptionIndex);
   const volumeMin = Math.min(...volumeValues);
   const volumeMax = Math.max(...volumeValues);
   const projection = useKzProjection();
+
+  const selectedRegion = selected ? byName.get(selected) : null;
+  const detail = useMemo(() => (selected ? computeRegionDetail(facts, filters, selected) : null), [facts, filters, selected]);
 
   const geoFeatures = (kzGeo as unknown as { features: GeoJSON.Feature[] }).features;
   const centroids = useMemo(
@@ -84,17 +94,18 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
           <Geographies geography={kzGeo}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const region = byName.get(geo.properties.name as string);
+                const name = geo.properties.name as string;
+                const region = byName.get(name);
                 const fill = region ? RISK_TIER_COLOR[region.riskTier] : '#e5e9f0';
+                const isSelected = selected === name;
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    onMouseEnter={() => region && setHovered(region)}
-                    onMouseLeave={() => setHovered(null)}
+                    onClick={() => region && setSelected(name)}
                     style={{
-                      default: { fill, fillOpacity: 0.55, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
-                      hover: { fill, fillOpacity: 0.85, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
+                      default: { fill, fillOpacity: isSelected ? 0.85 : 0.55, stroke: isSelected ? '#0a1728' : '#fcfcfb', strokeWidth: isSelected ? 1.5 : 0.75, outline: 'none', cursor: 'pointer' },
+                      hover: { fill, fillOpacity: 0.75, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none', cursor: 'pointer' },
                       pressed: { fill, fillOpacity: 0.85, stroke: '#fcfcfb', strokeWidth: 0.75, outline: 'none' },
                     }}
                   />
@@ -110,10 +121,10 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
                 <circle
                   r={markerRadius(region.consumptionIndex, volumeMin, volumeMax)}
                   fill={RISK_TIER_COLOR[region.riskTier]}
-                  stroke="#fcfcfb"
-                  strokeWidth={1.25}
-                  onMouseEnter={() => setHovered(region)}
-                  onMouseLeave={() => setHovered(null)}
+                  stroke={selected === name ? '#0a1728' : '#fcfcfb'}
+                  strokeWidth={selected === name ? 2 : 1.25}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSelected(name)}
                 />
               </Marker>
             );
@@ -135,26 +146,37 @@ export function KzHeatMap({ data }: KzHeatMapProps) {
       </div>
 
       <div className="rounded-xl border border-navy-100 bg-white p-4">
-        {hovered ? (
+        {selectedRegion && detail ? (
           <div>
             <div className="flex items-center justify-between gap-2">
-              <p className="font-semibold text-navy-900">{hovered.name}</p>
-              <RiskBadge tier={hovered.riskTier} score={hovered.riskScore} />
+              <p className="font-semibold text-navy-900">{selectedRegion.name}</p>
+              <RiskBadge tier={selectedRegion.riskTier} score={selectedRegion.riskScore} />
             </div>
-            <p className="mt-2 text-sm text-navy-500">
-              Индекс потребления (объём): <span className="font-semibold text-navy-900">{hovered.consumptionIndex}</span>
-            </p>
-            <p className="text-sm text-navy-500">
-              Доля нерезидентов: <span className="font-semibold text-navy-900">{hovered.nonresidentSharePct}%</span>
-            </p>
-            {hovered.isBorderRegion && (
-              <span className="mt-2 inline-block rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
-                Приграничный регион
-              </span>
+            {selectedRegion.isBorderRegion && (
+              <span className="mt-2 inline-block rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">Приграничный регион</span>
             )}
+
+            <p className="mt-3 mb-1 text-xs font-semibold tracking-wide text-navy-400 uppercase">Объём по маркам</p>
+            <ul className="space-y-1">
+              {detail.fuelBreakdown.map((f) => (
+                <li key={f.fuelType} className="flex items-center justify-between text-sm">
+                  <span className="text-navy-500">{FUEL_TYPE_LABEL[f.fuelType]}</span>
+                  <span className="font-semibold tabular-nums text-navy-900">{f.volumeT.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} т</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-3 space-y-1.5 border-t border-navy-100 pt-3">
+              <p className="text-sm text-navy-500">
+                Доля нерезидентам (по отпускам): <span className="font-semibold text-navy-900">{detail.nonresidentSharePct}%</span>
+              </p>
+              <p className="text-sm text-navy-500">
+                Доля операций сверх лимита: <span className="font-semibold text-navy-900">{detail.overLimitVolumeSharePct}%</span>
+              </p>
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-navy-400">Наведите на область или маркер, чтобы увидеть показатели.</p>
+          <p className="text-sm text-navy-400">Выберите область или маркер на карте, чтобы увидеть показатели по региону.</p>
         )}
       </div>
     </div>

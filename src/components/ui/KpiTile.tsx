@@ -3,7 +3,8 @@ import { Sparkline } from './Sparkline';
 import { Card, cardBaseClassName } from './card';
 import { cn } from '@/lib/utils';
 import { status as statusColors } from '@/theme/colors';
-import type { KpiGoodDirection } from '@/mocks/seed';
+
+export type KpiGoodDirection = 'up' | 'down';
 
 export interface KpiTileProps {
   label: string;

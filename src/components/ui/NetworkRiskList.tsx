@@ -18,7 +18,7 @@ export function NetworkRiskList({ networks }: { networks: StationNetworkStat[] }
             <div className="flex shrink-0 items-center gap-3">
               <span className={`text-xs ${gap > 0 ? 'text-status-blocked' : 'text-navy-400'}`}>
                 {gap > 0 ? '+' : ''}
-                {gap.toLocaleString('ru-RU')} л расхождение
+                {gap.toLocaleString('ru-RU')} расхождение (чеков)
               </span>
               <RiskBadge tier={riskTierOf(n.riskScore)} score={n.riskScore} />
             </div>

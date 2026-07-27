@@ -8,25 +8,13 @@ export { adminUsersSeed } from './adminUsers.seed';
 export { stationsSeed } from './stations.seed';
 export { casesSeed } from './cases.seed';
 export { DAILY_LIMIT_L, PERSONAL_DAILY_LIMIT_L, FUEL_TYPE_LABEL, PRICE_KZT } from './limits.seed';
+export { KZ_REGION_NAMES, REGION_BASE_CONSUMPTION, BORDER_REGIONS, ELEVATED_RISK_BORDER_REGIONS, ELEVATED_OVER_LIMIT_REGIONS } from './regions';
 export {
-  monthlyLegalitySeed,
-  legalityGapByCounterpartySeed,
+  procurementGapByCounterpartySeed,
   stationNetworkStatsSeed,
   consumptionStructureSeed,
   regionConsumptionSeed,
-  fuelTourismSeed,
-  anomalyTaxonomySeed,
-  kpiSeed,
-  kpiDerived,
 } from './analytics.seed';
-export type {
-  MonthlyLegalityPoint,
-  GapCounterparty,
-  StationNetworkStat,
-  ConsumptionStructurePoint,
-  RegionConsumptionPoint,
-  FuelTourismGroup,
-  AnomalyTaxonomyPoint,
-  KpiMetric,
-  KpiGoodDirection,
-} from './analytics.seed';
+export type { GapCounterparty, StationNetworkStat, ConsumptionStructurePoint, RegionConsumptionPoint } from './analytics.seed';
+export { regionFuelFactsSeed, FACT_DATES, FACTS_DAYS, FUEL_TYPES } from './regionFuelFacts.seed';
+export type { RegionFuelDailyFact } from './regionFuelFacts.seed';
