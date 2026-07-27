@@ -17,6 +17,16 @@ export const usersSeed: User[] = [
     createdAt: '2026-06-01T05:00:00.000Z',
   },
   {
+    id: 'user_fl_egov_multi',
+    type: 'fl',
+    residency: 'resident',
+    fio: 'Байжанов Ерлан Толегенович',
+    phone: '+77011234509',
+    channel: 'egov',
+    iin: '880101300111',
+    createdAt: '2026-06-01T05:10:00.000Z',
+  },
+  {
     id: 'user_fl_kmg',
     type: 'fl',
     residency: 'resident',

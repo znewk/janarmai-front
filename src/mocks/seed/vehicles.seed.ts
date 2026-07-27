@@ -8,6 +8,10 @@ export const vehiclesSeed: Vehicle[] = [
   { id: 'veh_fl_kmg_1', ownerKind: 'user', ownerId: 'user_fl_kmg', grnz: '002BBB02', category: 'passenger', active: true },
   { id: 'veh_fl_kmg_2', ownerKind: 'user', ownerId: 'user_fl_kmg', grnz: '450CCC02', category: 'truck', active: true },
 
+  // ФЛ-резидент (eGov) — легковая + грузовая → 2 карты, для входа через eGov без ввода номера
+  { id: 'veh_fl_egov_multi_1', ownerKind: 'user', ownerId: 'user_fl_egov_multi', grnz: '003GGG02', category: 'passenger', active: true },
+  { id: 'veh_fl_egov_multi_2', ownerKind: 'user', ownerId: 'user_fl_egov_multi', grnz: '451HHH02', category: 'truck', active: true },
+
   // ЮЛ-резидент — автопарк из 3 ТС
   {
     id: 'veh_company_res_1',
