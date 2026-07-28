@@ -2,7 +2,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
-import { MapPin, Fuel as FuelIcon, Users, CreditCard, RotateCcw } from 'lucide-react';
+import { CalendarDays, MapPin, Fuel as FuelIcon, Users, CreditCard, RotateCcw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Label } from './label';
 import { Button } from './button';
@@ -48,12 +48,45 @@ function FieldLabel({ icon: Icon, children }: { icon: typeof MapPin; children: s
 
 const ACTIVE_TRIGGER_CLASS = 'border-orange-300 bg-orange-50 text-orange-700';
 
+/** Города республиканского значения — выводятся первыми в списке регионов, без суффикса «область» (это не области). */
+const REPUBLIC_CITIES = new Set(['Астана', 'Алматы', 'Шымкент']);
+
+/** Города сверху, затем области — значение фильтра (region) не меняется, чтобы не разойтись с GeoJSON/фактовой таблицей, меняется только порядок и подпись в выпадающем списке. */
+const ORDERED_REGION_OPTIONS: string[] = [
+  'all',
+  ...REGION_OPTIONS.filter((r) => r !== 'all' && REPUBLIC_CITIES.has(r)),
+  ...REGION_OPTIONS.filter((r) => r !== 'all' && !REPUBLIC_CITIES.has(r)),
+];
+
+export function regionOptionLabel(r: string): string {
+  if (r === 'all') return 'Все регионы';
+  if (REPUBLIC_CITIES.has(r)) return r;
+  return `${r} область`;
+}
+
+/**
+ * `select.tsx` — общий примитив (переиспользуется и мобильным потребительским UI, где принят
+ * пилюльный вид `rounded-full`). Здесь этот вид переопределяется через className только для
+ * аналитического фильтра, под размер/радиус MUI `MuiDateField` (42px высота, 6px радиус) —
+ * не трогая сам `select.tsx`, чтобы не задеть чипы фильтра в мобильной истории заправок
+ * (`FilterBar.tsx`), которые используют тот же `SelectTrigger` (см. правки по стилям фильтра,
+ * PROGRESS.md).
+ */
+const FILTER_TRIGGER_CLASS =
+  'rounded-md border-navy-100 shadow-none px-4 py-2.5 data-[size=default]:h-[42px] hover:border-navy-200 focus-visible:border-orange-500';
+
 /**
  * Единая строка глобальных фильтров дашборда (период/регион/марка/резидентство/тип держателя) —
  * по замечанию ПМ: должны влиять на все виджеты сразу, поэтому состояние фильтров живёт на
  * уровне `AdminDashboardPage` и прокидывается в вычисления `analyticsCompute.ts`.
  * Переиспользуется также как локальный мини-фильтр у отдельных виджетов (`fields` сужает набор).
  * Активные (не дефолтные) поля подсвечены оранжевым — чтобы было видно, что именно сейчас сужено.
+ *
+ * Поле периода использует MUI `DatePicker` (см. MuiDateField.tsx) — единственный MUI-элемент в
+ * проекте. Раньше оно визуально выбивалось из ряда (свой плавающий лейбл, невидимый бордер,
+ * pill-радиус) — теперь у него тот же паттерн «FieldLabel сверху + контрол снизу», что и у Select,
+ * а подсветка активности — на самих полях, а не на обособленной обёртке (см. правки по стилям
+ * фильтра, PROGRESS.md).
  */
 export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, className }: AnalyticsFilterBarProps) {
   const dateActive = filters.dateFrom !== DEFAULT_FILTERS.dateFrom || filters.dateTo !== DEFAULT_FILTERS.dateTo;
@@ -84,29 +117,33 @@ export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, cla
   };
 
   return (
-    <div className={cn('flex flex-wrap items-end gap-4', className)}>
+    <div className={cn('flex flex-wrap items-end gap-5', className)}>
       {fields.includes('date') && (
-        <ThemeProvider theme={muiTheme}>
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
-            <div className={cn('flex items-end gap-2 rounded-2xl p-1', dateActive && 'bg-orange-50')}>
-              <MuiDateField label="Период с" value={filters.dateFrom} onChange={(v) => onChange({ dateFrom: v })} />
-              <MuiDateField label="по" value={filters.dateTo} onChange={(v) => onChange({ dateTo: v })} />
-            </div>
-          </LocalizationProvider>
-        </ThemeProvider>
+        <div className="space-y-1.5">
+          <FieldLabel icon={CalendarDays}>Период</FieldLabel>
+          <ThemeProvider theme={muiTheme}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
+              <div className="flex items-center gap-1.5">
+                <MuiDateField value={filters.dateFrom} onChange={(v) => onChange({ dateFrom: v })} active={dateActive} placeholder="с" />
+                <span className="text-xs text-navy-300">—</span>
+                <MuiDateField value={filters.dateTo} onChange={(v) => onChange({ dateTo: v })} active={dateActive} placeholder="по" />
+              </div>
+            </LocalizationProvider>
+          </ThemeProvider>
+        </div>
       )}
 
       {fields.includes('region') && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <FieldLabel icon={MapPin}>Регион</FieldLabel>
           <Select value={filters.region} onValueChange={(v) => onChange({ region: v })}>
-            <SelectTrigger aria-label="Регион" className={cn('w-[172px]', regionActive && ACTIVE_TRIGGER_CLASS)}>
+            <SelectTrigger aria-label="Регион" className={cn(FILTER_TRIGGER_CLASS, 'w-[180px]', regionActive && ACTIVE_TRIGGER_CLASS)}>
               <SelectValue placeholder="Все регионы" />
             </SelectTrigger>
             <SelectContent>
-              {REGION_OPTIONS.map((r) => (
+              {ORDERED_REGION_OPTIONS.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {r === 'all' ? 'Все регионы' : r}
+                  {regionOptionLabel(r)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -115,10 +152,10 @@ export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, cla
       )}
 
       {fields.includes('fuel') && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <FieldLabel icon={FuelIcon}>Марка топлива</FieldLabel>
           <Select value={filters.fuelType} onValueChange={(v) => onChange({ fuelType: v as DashboardFilters['fuelType'] })}>
-            <SelectTrigger aria-label="Марка топлива" className={cn('w-[150px]', fuelActive && ACTIVE_TRIGGER_CLASS)}>
+            <SelectTrigger aria-label="Марка топлива" className={cn(FILTER_TRIGGER_CLASS, 'w-[158px]', fuelActive && ACTIVE_TRIGGER_CLASS)}>
               <SelectValue placeholder="Все марки" />
             </SelectTrigger>
             <SelectContent>
@@ -133,10 +170,10 @@ export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, cla
       )}
 
       {fields.includes('residency') && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <FieldLabel icon={Users}>Резидентство</FieldLabel>
           <Select value={filters.residency} onValueChange={(v) => onChange({ residency: v as DashboardFilters['residency'] })}>
-            <SelectTrigger aria-label="Резидентство" className={cn('w-[140px]', residencyActive && ACTIVE_TRIGGER_CLASS)}>
+            <SelectTrigger aria-label="Резидентство" className={cn(FILTER_TRIGGER_CLASS, 'w-[148px]', residencyActive && ACTIVE_TRIGGER_CLASS)}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -151,10 +188,10 @@ export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, cla
       )}
 
       {fields.includes('ownerType') && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <FieldLabel icon={CreditCard}>Держатель</FieldLabel>
           <Select value={filters.ownerType} onValueChange={(v) => onChange({ ownerType: v as DashboardFilters['ownerType'] })}>
-            <SelectTrigger aria-label="Тип держателя карты" className={cn('w-[110px]', ownerActive && ACTIVE_TRIGGER_CLASS)}>
+            <SelectTrigger aria-label="Тип держателя карты" className={cn(FILTER_TRIGGER_CLASS, 'w-[118px]', ownerActive && ACTIVE_TRIGGER_CLASS)}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

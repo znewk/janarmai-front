@@ -84,19 +84,28 @@ export function CabinetFlPage() {
       </div>
 
       <div className="space-y-4">
-        {myCards.map((card) => (
-          <div key={card.id} className="space-y-2">
-            <CardMunai
-              holderName={user.fio}
-              maskedIdentifier={card.maskedIdentifier}
-              cardLabel={CARD_TYPE_LABEL[card.cardType]}
-              qrToken={card.qrToken}
-              remainingLabel={card.dailyLimitL !== null ? `${Math.max(card.dailyLimitL - card.usedTodayL, 0)} л` : 'без лимита'}
-              onExpandQr={() => setExpandedCardId(card.id)}
-            />
-            <LimitProgressBar usedL={card.usedTodayL} limitL={card.dailyLimitL} />
-          </div>
-        ))}
+        {myCards.map((card) => {
+          const totalPurchasedL = card.monitoringOnly ? transactions.filter((t) => t.cardId === card.id).reduce((s, t) => s + t.volumeL, 0) : 0;
+          const remainingLabel = card.monitoringOnly
+            ? `${totalPurchasedL} л`
+            : card.dailyLimitL !== null
+              ? `${Math.max(card.dailyLimitL - card.usedTodayL, 0)} л`
+              : 'без лимита';
+          return (
+            <div key={card.id} className="space-y-2">
+              <CardMunai
+                holderName={user.fio}
+                maskedIdentifier={card.maskedIdentifier}
+                cardLabel={CARD_TYPE_LABEL[card.cardType]}
+                qrToken={card.qrToken}
+                remainingLabel={remainingLabel}
+                remainingCaption={card.monitoringOnly ? 'Куплено топлива' : undefined}
+                onExpandQr={() => setExpandedCardId(card.id)}
+              />
+              <LimitProgressBar usedL={card.usedTodayL} limitL={card.dailyLimitL} monitoringOnly={card.monitoringOnly} />
+            </div>
+          );
+        })}
         {myCards.length === 0 && <p className="text-sm text-gray-400">Активных карт нет.</p>}
       </div>
 

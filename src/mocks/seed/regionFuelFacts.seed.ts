@@ -12,7 +12,7 @@ import { REGION_BASE_CONSUMPTION, KZ_REGION_NAMES, ELEVATED_RISK_BORDER_REGIONS,
  * тот же `buildDailySeries` (недельная сезонность + шум + выброс), что уже использовался в
  * `analytics.seed.ts` — не переизобретается, только применяется на более мелкой грануле.
  *
- * 60 дней × 20 регионов × 4 марки = 4800 строк, генерируется один раз при загрузке модуля.
+ * 60 дней × 20 регионов × 6 марок = 7200 строк, генерируется один раз при загрузке модуля.
  */
 
 export const FACTS_DAYS = 60;
@@ -28,10 +28,14 @@ function dayIndexToISO(dayIndex: number): string {
 /** Все даты ряда по порядку, `FACT_DATES[0]` — самый ранний день, `FACT_DATES[FACTS_DAYS-1]` === `FACTS_END_DATE`. */
 export const FACT_DATES: string[] = Array.from({ length: FACTS_DAYS }, (_, i) => dayIndexToISO(i));
 
-export const FUEL_TYPES: FuelType[] = ['ai92', 'ai95', 'ai98', 'dt'];
+export const FUEL_TYPES: FuelType[] = ['ai92', 'ai95', 'ai98', 'ai100', 'dt_summer', 'dt_winter'];
 
-/** Условная доля марки в общем отпуске — реалистичное распределение (ДТ — грузовой транспорт, АИ-98 — нишевая премиальная марка). */
-const FUEL_WEIGHTS: Record<FuelType, number> = { ai92: 0.4, ai95: 0.34, ai98: 0.07, dt: 0.19 };
+/**
+ * Условная доля марки в общем отпуске — реалистичное распределение (ДТ — грузовой транспорт,
+ * АИ-98/АИ-100 — нишевые премиальные марки). ДТ разбито на летнее/зимнее: ряд данных заканчивается
+ * в июле (см. FACTS_END_DATE), поэтому зимнее ДТ намеренно взято с малым весом — не сезон.
+ */
+const FUEL_WEIGHTS: Record<FuelType, number> = { ai92: 0.36, ai95: 0.3, ai98: 0.06, ai100: 0.02, dt_summer: 0.17, dt_winter: 0.09 };
 
 /** Масштаб суточного объёма (л) — подобран так, чтобы суммарные цифры за период выглядели правдоподобно, не претендуя на точное соответствие реальной статистике РК (демо-данные). */
 const VOLUME_SCALE = 3000;
@@ -62,7 +66,7 @@ export interface RegionFuelDailyFact {
  */
 const FUEL_DROPOFF_CASES: { region: string; fuelType: FuelType; factor: number }[] = [
   { region: 'Костанайская', fuelType: 'ai95', factor: 0.52 },
-  { region: 'Туркестанская', fuelType: 'dt', factor: 0.58 },
+  { region: 'Туркестанская', fuelType: 'dt_summer', factor: 0.58 },
 ];
 
 function nonresidentShareBase(region: string): number {

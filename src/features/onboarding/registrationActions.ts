@@ -1,7 +1,7 @@
 import type { Card, Channel, Residency, VehicleCategory } from '@/types/entities';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
-import { deriveFlCardSpecs, deriveUlCardSpec, materializeCard } from '@/lib/cardRules';
+import { deriveFlCardSpecs, deriveUlCardSpec, deriveMonitoringCardSpec, materializeCard } from '@/lib/cardRules';
 import { maskIdentifier } from '@/lib/mask';
 import { generateId } from '@/lib/id';
 
@@ -12,8 +12,10 @@ interface FlRegistrationParams {
   channel: Channel;
   iin?: string;
   passportNumber?: string;
-  /** Собственные ТС — обычно 0–1, но может быть 2 (легковая + грузовая одновременно, ТЗ S-10). */
+  /** Собственные ТС — обычно 0–1, но может быть 2 (легковая + грузовая одновременно, ТЗ S-10). Игнорируются при monitoringOnly. */
   vehicles?: { grnz: string; category: VehicleCategory }[];
+  /** Демо-ветка «только мониторинг» (см. deriveMonitoringCardSpec) — выпускает одну карту без лимита и без привязки к ТС. */
+  monitoringOnly?: boolean;
 }
 
 /**
@@ -36,7 +38,7 @@ export function finalizeFlRegistration(params: FlRegistrationParams): { userId: 
     createdAt: new Date().toISOString(),
   });
 
-  const vehicles = params.vehicles ?? [];
+  const vehicles = params.monitoringOnly ? [] : (params.vehicles ?? []);
   const truckVehicleIds: string[] = [];
   for (const vehicle of vehicles) {
     const vehicleId = generateId('veh');
@@ -51,10 +53,9 @@ export function finalizeFlRegistration(params: FlRegistrationParams): { userId: 
     if (vehicle.category === 'truck') truckVehicleIds.push(vehicleId);
   }
 
-  const specs = deriveFlCardSpecs({
-    residency: params.residency,
-    vehicleCategories: vehicles.map((v) => v.category),
-  });
+  const specs = params.monitoringOnly
+    ? [deriveMonitoringCardSpec()]
+    : deriveFlCardSpecs({ residency: params.residency, vehicleCategories: vehicles.map((v) => v.category) });
   const maskedIdentifier = maskIdentifier(params.iin ?? params.passportNumber);
   const cards: Card[] = [];
   let truckIdx = 0;

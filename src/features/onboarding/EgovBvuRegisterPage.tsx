@@ -5,7 +5,7 @@ import { WizardShell } from './steps/WizardShell';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
 import { LimitResultStep, type ResultCardSpec } from './steps/LimitResultStep';
 import { generateDemoFio, generateDemoIin, generateDemoPhone } from '@/lib/demoIdentity';
-import { deriveFlCardSpecs } from '@/lib/cardRules';
+import { deriveFlCardSpecs, deriveMonitoringCardSpec } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
 import { maskIdentifier } from '@/lib/mask';
 import { Card, cardBaseClassName } from '@/components/ui/card';
@@ -25,6 +25,7 @@ export function EgovBvuRegisterPage() {
   const [identity] = useState(() => ({ fio: generateDemoFio(), iin: generateDemoIin(), phone: generateDemoPhone() }));
   const [step, setStep] = useState<Step>('identity');
   const [consentChecked, setConsentChecked] = useState(false);
+  const [monitoringOnly, setMonitoringOnly] = useState(false);
   const [vehicleResult, setVehicleResult] = useState<VehicleCheckResult | null>(null);
 
   const stepIndex = STEP_ORDER.indexOf(step);
@@ -37,6 +38,7 @@ export function EgovBvuRegisterPage() {
       channel: 'egov',
       iin: identity.iin,
       vehicles: vehicleResult?.vehicles,
+      monitoringOnly,
     });
     navigate('/card', { state: { justIssued: true } });
   };
@@ -65,7 +67,7 @@ export function EgovBvuRegisterPage() {
               </div>
             </dl>
           </Card>
-          <Button type="button" disabled={!consentChecked} onClick={() => setStep('vehicle')} className="w-full">
+          <Button type="button" disabled={!consentChecked} onClick={() => setStep(monitoringOnly ? 'result' : 'vehicle')} className="w-full">
             Продолжить
           </Button>
           <label className={`${cardBaseClassName} flex-row items-start gap-3`}>
@@ -77,10 +79,21 @@ export function EgovBvuRegisterPage() {
             />
             <span className="text-sm text-gray-700">Я согласен(на) на обработку персональных данных в системе учёта отпуска ГСМ</span>
           </label>
+          <label className={`${cardBaseClassName} flex-row items-start gap-3`}>
+            <input
+              type="checkbox"
+              checked={monitoringOnly}
+              onChange={(e) => setMonitoringOnly(e.target.checked)}
+              className="mt-0.5 h-5 w-5 accent-navy-600"
+            />
+            <span className="text-sm text-gray-700">
+              Демо: аккаунт «только мониторинг» — без суточного лимита, карта лишь показывает объём купленного топлива, без привязки к ТС
+            </span>
+          </label>
         </div>
       )}
 
-      {step === 'vehicle' && (
+      {step === 'vehicle' && !monitoringOnly && (
         <VehicleCheckStep
           identifier={identity.iin}
           onComplete={(result) => {
@@ -91,9 +104,11 @@ export function EgovBvuRegisterPage() {
       )}
 
       {step === 'result' &&
-        vehicleResult &&
+        (monitoringOnly || vehicleResult) &&
         (() => {
-          const specs: ResultCardSpec[] = deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult.vehicles.map((v) => v.category) });
+          const specs: ResultCardSpec[] = monitoringOnly
+            ? [deriveMonitoringCardSpec()]
+            : deriveFlCardSpecs({ residency: 'resident', vehicleCategories: vehicleResult!.vehicles.map((v) => v.category) });
           return <LimitResultStep specs={specs} onContinue={handleIssueCard} />;
         })()}
     </WizardShell>

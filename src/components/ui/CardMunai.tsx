@@ -9,8 +9,10 @@ export interface CardMunaiProps {
   /** Подпись типа карты: «ФЛ · легковая», «ЮЛ · грузовая · 001AAA02» и т.п. */
   cardLabel: string;
   qrToken: string;
-  /** Текст остатка лимита крупным акцентным шрифтом; для карт без потолка — «без лимита». */
+  /** Текст остатка лимита крупным акцентным шрифтом; для карт без потолка — «без лимита», для monitoringOnly — объём покупок. */
   remainingLabel: string;
+  /** Подпись над remainingLabel — по умолчанию «Остаток лимита на сегодня»; для monitoringOnly-карт переопределяется вызывающей стороной. */
+  remainingCaption?: string;
   qrRefreshSeconds?: number;
   inactive?: boolean;
   /** Если передан — QR становится тапабельным, открывает полноэкранный показ (для сканирования кассиром). */
@@ -29,6 +31,7 @@ export function CardMunai({
   cardLabel,
   qrToken,
   remainingLabel,
+  remainingCaption = 'Остаток лимита на сегодня',
   qrRefreshSeconds = 30,
   inactive = false,
   onExpandQr,
@@ -77,7 +80,7 @@ export function CardMunai({
       </div>
 
       <div className="relative mt-5">
-        <p className="text-xs text-navy-300">Остаток лимита на сегодня</p>
+        <p className="text-xs text-navy-300">{remainingCaption}</p>
         <p className="text-2xl font-bold text-orange-400 tabular-nums">{remainingLabel}</p>
       </div>
     </div>

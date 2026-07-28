@@ -162,7 +162,9 @@ export interface SunpWeeklyPoint {
 
 export interface SunpReconciliation {
   purchaseT: number;
+  purchaseL: number;
   realizedT: number;
+  realizedL: number;
   ratioPct: number;
   deltaPct: number;
   weeklyTrend: SunpWeeklyPoint[];
@@ -190,7 +192,15 @@ export function computeSunpReconciliation(facts: RegionFuelDailyFact[], filters:
     weekIndex += 1;
   }
 
-  return { purchaseT: cur.purchaseVolumeT, realizedT: cur.volumeT, ratioPct, deltaPct: pctDelta(ratioPct, prevRatioPct), weeklyTrend };
+  return {
+    purchaseT: cur.purchaseVolumeT,
+    purchaseL: cur.purchaseVolumeL,
+    realizedT: cur.volumeT,
+    realizedL: cur.volumeL,
+    ratioPct,
+    deltaPct: pctDelta(ratioPct, prevRatioPct),
+    weeklyTrend,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -204,6 +214,8 @@ export interface NonresidentSharePoint {
 
 export interface NonresidentShareResult {
   sharePct: number;
+  /** Абсолютный объём, отпущенный нерезидентам, тонны — та же цифра, что складывается в sharePct, чтобы % не был «голым». */
+  volumeT: number;
   deltaPct: number;
   trend: NonresidentSharePoint[];
 }
@@ -230,7 +242,7 @@ export function computeNonresidentShare(facts: RegionFuelDailyFact[], filters: D
     weekIndex += 1;
   }
 
-  return { sharePct, deltaPct: pctDelta(sharePct, prevSharePct), trend };
+  return { sharePct, volumeT: cur.nonresidentVolumeT, deltaPct: pctDelta(sharePct, prevSharePct), trend };
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +251,13 @@ export function computeNonresidentShare(facts: RegionFuelDailyFact[], filters: D
 
 export interface OverLimitShareResult {
   volumeSharePct: number;
+  /** Абсолютный объём сверх лимита (по рыночной цене), тонны. */
+  volumeT: number;
   opsSharePct: number;
+  /** Абсолютное количество операций сверх лимита. */
+  opsCount: number;
+  /** Абсолютное общее количество операций за период (знаменатель opsSharePct). */
+  totalOpsCount: number;
   deltaPct: number;
   trend: NonresidentSharePoint[];
 }
@@ -267,26 +285,125 @@ export function computeOverLimitShare(facts: RegionFuelDailyFact[], filters: Das
     weekIndex += 1;
   }
 
-  return { volumeSharePct, opsSharePct, deltaPct: pctDelta(volumeSharePct, prevVolumeSharePct), trend };
+  return {
+    volumeSharePct,
+    volumeT: cur.marketVolumeT,
+    opsSharePct,
+    opsCount: Math.round(cur.overLimitOpsCount),
+    totalOpsCount: Math.round(cur.opsCount),
+    deltaPct: pctDelta(volumeSharePct, prevVolumeSharePct),
+    trend,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Боковая панель тепловой карты — детали выбранного региона под текущие глобальные фильтры
 // ---------------------------------------------------------------------------
 
+export interface RegionTotal {
+  region: string;
+  volumeT: number;
+}
+
+/**
+ * Порог «заметного» роста объёма к предыдущему периоду той же длины — не задан явно в исходных
+ * материалах, зафиксирован как допущение (см. OPEN_QUESTIONS.md). Это НЕ показатель нарушения:
+ * быстрый рост объёма может быть легитимным сезонным спросом (посевная/уборочная кампания и т.п.),
+ * поэтому визуально оформляется отдельно от красно-жёлто-зелёного статуса риска (см. shareToneUI.ts).
+ */
+export const VOLUME_GROWTH_NOTABLE_THRESHOLD_PCT = 25;
+
+/** % изменения объёма региона (тонны) к предыдущему периоду той же длины, под текущими фильтрами. */
+function regionVolumeDeltaPct(facts: RegionFuelDailyFact[], filters: DashboardFilters, region: string): number {
+  const regionFilters: DashboardFilters = { ...filters, region };
+  const curT = sumScaled(filterByDateRegionFuel(facts, regionFilters), filters).volumeT;
+  const prevRange = previousPeriodRange(filters.dateFrom, filters.dateTo);
+  const prevT = sumScaled(filterByDateRegionFuel(facts, { ...regionFilters, ...prevRange }), filters).volumeT;
+  return pctDelta(curT, prevT);
+}
+
+/**
+ * Суммарный объём (тонны) по каждому региону под текущими фильтрами (период/марка/резидентство/
+ * держатель, без фильтра по региону) — из той же фактовой таблицы, что и остальные показатели.
+ * Раньше «ранг по объёму»/«% от объёма РК» на боковой панели тепловой карты считались от
+ * СИНТЕТИЧЕСКОГО `consumptionIndex` в `regionConsumptionSeed` (случайное число, не связанное с
+ * реальным объёмом на этой же панели) — отсюда и «откуда этот процент?». Теперь и ранг, и доля
+ * от РК считаются из тех же тонн, что показаны в «Объём по маркам» на этой же панели.
+ */
+export function computeAllRegionTotals(facts: RegionFuelDailyFact[], filters: DashboardFilters): RegionTotal[] {
+  return KZ_REGION_NAMES.map((region) => {
+    const rows = filterByDateRegionFuel(facts, { ...filters, region });
+    const totals = sumScaled(rows, filters);
+    return { region, volumeT: totals.volumeT };
+  });
+}
+
 export interface RegionDetail {
   region: string;
   fuelBreakdown: FuelVolumeBreakdownItem[];
+  totalVolumeT: number;
+  totalVolumeL: number;
+  volumeRank: number;
+  totalRegions: number;
+  /** Доля объёма этого региона от суммарного объёма всех регионов РК под текущими фильтрами. */
+  volumeSharePctOfRK: number;
+  /** % изменения объёма к предыдущему периоду той же длины — рост сам по себе не нарушение (см. VOLUME_GROWTH_NOTABLE_THRESHOLD_PCT). */
+  volumeDeltaPct: number;
   nonresidentSharePct: number;
+  /** Абсолютный объём, отпущенный нерезидентам в этом регионе, тонны. */
+  nonresidentVolumeT: number;
   overLimitVolumeSharePct: number;
+  /** Абсолютный объём сверх лимита в этом регионе, тонны. */
+  overLimitVolumeT: number;
+  /** Абсолютное количество операций сверх лимита / общее количество операций в этом регионе. */
+  overLimitOpsCount: number;
+  overLimitTotalOpsCount: number;
+  /**
+   * Статус региона — «худший» из двух тонов (доля нерезидентам vs порог 20%, доля сверх лимита
+   * vs порог 15%) — те же пороги, что использует классификатор аномалий. Раньше здесь был
+   * отдельный `riskScore`/`riskTier` из `regionConsumptionSeed` (случайное число без видимой
+   * формулы — источник вопроса «как ты высчитываешь эти баллы?»). Теперь статус прямо и
+   * прозрачно выводится из двух процентов, которые показаны на этой же панели.
+   */
+  status: ShareTone;
 }
 
 export function computeRegionDetail(facts: RegionFuelDailyFact[], filters: DashboardFilters, region: string): RegionDetail {
   const regionFilters: DashboardFilters = { ...filters, region };
   const fuelBreakdown = computeFuelBreakdown(facts, regionFilters);
+  const totalVolumeT = fuelBreakdown.reduce((s, f) => s + f.volumeT, 0);
+  const totalVolumeL = fuelBreakdown.reduce((s, f) => s + f.volumeL, 0);
+
   const nonresident = computeNonresidentShare(facts, regionFilters);
   const overLimit = computeOverLimitShare(facts, regionFilters);
-  return { region, fuelBreakdown, nonresidentSharePct: nonresident.sharePct, overLimitVolumeSharePct: overLimit.volumeSharePct };
+
+  const allTotals = computeAllRegionTotals(facts, filters);
+  const totalRK = allTotals.reduce((s, r) => s + r.volumeT, 0);
+  const sortedByVolume = [...allTotals].sort((a, b) => b.volumeT - a.volumeT);
+  const volumeRank = sortedByVolume.findIndex((r) => r.region === region) + 1;
+  const volumeSharePctOfRK = totalRK > 0 ? Math.round((totalVolumeT / totalRK) * 1000) / 10 : 0;
+
+  const nonresidentTone = shareTone(nonresident.sharePct, NONRESIDENT_SPIKE_THRESHOLD_PCT / 2, NONRESIDENT_SPIKE_THRESHOLD_PCT);
+  const overLimitTone = shareTone(overLimit.volumeSharePct, OVER_LIMIT_SHARE_THRESHOLD_PCT / 2, OVER_LIMIT_SHARE_THRESHOLD_PCT);
+  const status: ShareTone = TONE_RANK[nonresidentTone] >= TONE_RANK[overLimitTone] ? nonresidentTone : overLimitTone;
+
+  return {
+    region,
+    fuelBreakdown,
+    totalVolumeT,
+    totalVolumeL,
+    volumeRank,
+    totalRegions: allTotals.length,
+    volumeSharePctOfRK,
+    volumeDeltaPct: regionVolumeDeltaPct(facts, filters, region),
+    nonresidentSharePct: nonresident.sharePct,
+    nonresidentVolumeT: nonresident.volumeT,
+    overLimitVolumeSharePct: overLimit.volumeSharePct,
+    overLimitVolumeT: overLimit.volumeT,
+    overLimitOpsCount: overLimit.opsCount,
+    overLimitTotalOpsCount: overLimit.totalOpsCount,
+    status,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -303,11 +420,79 @@ export interface AnomalyClassifierPoint {
   priorPeriodCount: number;
 }
 
-/** Пороги классификатора — не заданы явно в исходных материалах, зафиксированы как допущение (см. OPEN_QUESTIONS.md). */
-const FUEL_DROPOFF_THRESHOLD_PCT = 30;
+/**
+ * Пороги классификатора — не заданы явно в исходных материалах, зафиксированы как допущение
+ * (см. OPEN_QUESTIONS.md). Экспортируются — переиспользуются в `AdminDashboardPage.tsx`/
+ * `OverLimitShareCard.tsx` для цветовой индикации (зелёный/жёлтый/красный) тех же двух главных
+ * показателей, чтобы пороги «что считать высоким» не расходились между классификатором и KPI.
+ */
+export const FUEL_DROPOFF_THRESHOLD_PCT = 30;
 const FUEL_DROPOFF_MIN_PRIOR_T = 1;
-const NONRESIDENT_SPIKE_THRESHOLD_PCT = 20;
-const OVER_LIMIT_SHARE_THRESHOLD_PCT = 15;
+export const NONRESIDENT_SPIKE_THRESHOLD_PCT = 20;
+export const OVER_LIMIT_SHARE_THRESHOLD_PCT = 15;
+
+export type ShareTone = 'ok' | 'warning' | 'critical';
+
+/** Классификация доли (%) на «низкий/средний/высокий» по тем же порогам, что и классификатор аномалий — для цветовой индикации KPI-плиток. */
+export function shareTone(pct: number, warnAtPct: number, riskAtPct: number): ShareTone {
+  if (pct >= riskAtPct) return 'critical';
+  if (pct >= warnAtPct) return 'warning';
+  return 'ok';
+}
+
+const TONE_RANK: Record<ShareTone, number> = { ok: 0, warning: 1, critical: 2 };
+
+// ---------------------------------------------------------------------------
+// Сводная таблица по регионам (под тепловой картой) — все регионы одним списком, для сортировки
+// ---------------------------------------------------------------------------
+
+export interface RegionSummaryRow {
+  region: string;
+  volumeT: number;
+  volumeL: number;
+  /** Место среди регионов РК по объёму (1 — наибольший объём). */
+  rank: number;
+  volumeSharePctOfRK: number;
+  /** % изменения объёма к предыдущему периоду той же длины — рост сам по себе не нарушение (см. VOLUME_GROWTH_NOTABLE_THRESHOLD_PCT). */
+  volumeDeltaPct: number;
+  nonresidentSharePct: number;
+  nonresidentVolumeT: number;
+  overLimitSharePct: number;
+  overLimitVolumeT: number;
+  status: ShareTone;
+}
+
+/** Тот же набор показателей, что и `computeRegionDetail`, но сразу для всех регионов одним проходом (для сводной таблицы под картой) — переиспользует `computeAllRegionTotals` один раз, а не по разу на регион. */
+export function computeRegionSummaries(facts: RegionFuelDailyFact[], filters: DashboardFilters): RegionSummaryRow[] {
+  const allTotals = computeAllRegionTotals(facts, filters);
+  const totalRK = allTotals.reduce((s, r) => s + r.volumeT, 0);
+  const rankOf = new Map([...allTotals].sort((a, b) => b.volumeT - a.volumeT).map((r, i) => [r.region, i + 1]));
+
+  return allTotals.map(({ region, volumeT }) => {
+    const rows = filterByDateRegionFuel(facts, { ...filters, region });
+    const totals = sumScaled(rows, filters);
+    const nonresidentSharePct = totals.volumeT > 0 ? Math.round((totals.nonresidentVolumeT / totals.volumeT) * 1000) / 10 : 0;
+    const overLimitSharePct = totals.volumeT > 0 ? Math.round((totals.marketVolumeT / totals.volumeT) * 1000) / 10 : 0;
+
+    const nonresidentTone = shareTone(nonresidentSharePct, NONRESIDENT_SPIKE_THRESHOLD_PCT / 2, NONRESIDENT_SPIKE_THRESHOLD_PCT);
+    const overLimitTone = shareTone(overLimitSharePct, OVER_LIMIT_SHARE_THRESHOLD_PCT / 2, OVER_LIMIT_SHARE_THRESHOLD_PCT);
+    const status: ShareTone = TONE_RANK[nonresidentTone] >= TONE_RANK[overLimitTone] ? nonresidentTone : overLimitTone;
+
+    return {
+      region,
+      volumeT,
+      volumeL: totals.volumeL,
+      rank: rankOf.get(region) ?? 0,
+      volumeSharePctOfRK: totalRK > 0 ? Math.round((volumeT / totalRK) * 1000) / 10 : 0,
+      volumeDeltaPct: regionVolumeDeltaPct(facts, filters, region),
+      nonresidentSharePct,
+      nonresidentVolumeT: totals.nonresidentVolumeT,
+      overLimitSharePct,
+      overLimitVolumeT: totals.marketVolumeT,
+      status,
+    };
+  });
+}
 
 function countFuelDropoffs(facts: RegionFuelDailyFact[], filters: DashboardFilters): number {
   const currentRows = filterByDateRegionFuel(facts, filters);

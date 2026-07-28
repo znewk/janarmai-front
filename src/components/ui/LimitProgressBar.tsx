@@ -3,16 +3,29 @@ import { Card } from './card';
 
 export interface LimitProgressBarProps {
   usedL: number;
-  /** null — льготный лимит не применяется (иностранец/ЮЛ-нерезидент), потолка нет (см. OPEN_QUESTIONS.md). */
+  /** null — льготный лимит не применяется (иностранец/ЮЛ-нерезидент, либо monitoringOnly), потолка нет (см. OPEN_QUESTIONS.md). */
   limitL: number | null;
   /** Порог, после которого заливка становится предупреждающей (по умолчанию 80%, ТЗ 5.1). */
   warningThreshold?: number;
   /** Собственная карточка-подложка — по умолчанию включена, чтобы бар был виден на сером фоне страницы, а не только внутри чужой Card (см. PROGRESS.md). */
   bare?: boolean;
+  /** Карта только для наблюдения за покупками (Card.monitoringOnly) — отдельный текст без слова «безлимит» и без рамки льготной цены. */
+  monitoringOnly?: boolean;
 }
 
 /** Индикатор остатка лимита (на базе примитива `Progress`) — синий в норме, оранжевый при приближении/превышении (ТЗ 8.3). */
-export function LimitProgressBar({ usedL, limitL, warningThreshold = 0.8, bare = false }: LimitProgressBarProps) {
+export function LimitProgressBar({ usedL, limitL, warningThreshold = 0.8, bare = false, monitoringOnly = false }: LimitProgressBarProps) {
+  if (monitoringOnly) {
+    const content = (
+      <div>
+        <p className="text-sm text-navy-600">
+          Куплено топлива сегодня: <span className="font-semibold text-navy-900">{usedL} л</span>
+        </p>
+      </div>
+    );
+    return bare ? content : <Card>{content}</Card>;
+  }
+
   if (limitL === null) {
     const content = (
       <div>

@@ -2,14 +2,23 @@ import { Fuel, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import type { FuelVolumeBreakdownItem } from '@/lib/analyticsCompute';
 import { FUEL_TYPE_LABEL } from '@/mocks/seed';
 
-/** Big-number плитки по маркам топлива (АИ-92/95/98/ДТ), тонны — главный показатель №1 (по замечанию ПМ). */
+/** Big-number плитки по маркам топлива (АИ-92/95/98/ДТ), тонны — главный показатель №1 (по замечанию ПМ). Итог по всем маркам — сверху, как главное число, разбивка по маркам — под ним. */
 export function FuelVolumeBreakdown({ items }: { items: FuelVolumeBreakdownItem[] }) {
   const totalT = items.reduce((s, i) => s + i.volumeT, 0);
   const totalL = items.reduce((s, i) => s + i.volumeL, 0);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 p-5 text-white shadow-sm shadow-orange-500/30">
+        <p className="text-xs font-semibold tracking-wide text-orange-100 uppercase">Итого по всем маркам</p>
+        <p className="mt-1 text-5xl font-bold tabular-nums text-white">
+          {totalT.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+          <span className="ml-1.5 text-xl font-semibold text-orange-100">т</span>
+        </p>
+        <p className="text-sm text-orange-100">{Math.round(totalL).toLocaleString('ru-RU')} л</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => {
           const DeltaIcon = item.deltaPct === 0 ? Minus : item.deltaPct > 0 ? ArrowUpRight : ArrowDownRight;
           const deltaClass = item.deltaPct === 0 ? 'text-navy-400' : item.deltaPct > 0 ? 'text-status-ok' : 'text-status-blocked';
@@ -40,16 +49,6 @@ export function FuelVolumeBreakdown({ items }: { items: FuelVolumeBreakdownItem[
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-navy-200 p-4">
-        <span className="text-xs font-semibold tracking-wide text-navy-500 uppercase">Итого по всем маркам</span>
-        <span className="text-right">
-          <span className="text-xl font-bold tabular-nums text-navy-900">
-            {totalT.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} т
-          </span>
-          <span className="ml-2 text-xs text-navy-400">{Math.round(totalL).toLocaleString('ru-RU')} л</span>
-        </span>
       </div>
     </div>
   );

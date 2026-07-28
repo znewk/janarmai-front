@@ -11,7 +11,7 @@ export interface FuelingResult {
   warningThresholdReached: boolean;
 }
 
-const AUTO_FUEL_TYPES: FuelType[] = ['ai92', 'ai95', 'ai98', 'dt'];
+const AUTO_FUEL_TYPES: FuelType[] = ['ai92', 'ai95', 'ai98', 'ai100', 'dt_summer', 'dt_winter'];
 
 /**
  * Автоподбор параметров демо-заправки (объём/топливо) для сценария «показал QR — АЗС сама

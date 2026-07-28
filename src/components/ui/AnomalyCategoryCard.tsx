@@ -27,7 +27,7 @@ export function AnomalyCategoryCard({ point, icon: Icon }: AnomalyCategoryCardPr
         <p className="text-xs text-navy-400">{point.description}</p>
         <span className={`mt-1 inline-flex items-center gap-0.5 text-xs font-semibold ${deltaClass}`}>
           <DeltaIcon className="h-3 w-3" />
-          {Math.abs(delta)} к прошлому периоду
+          {Math.abs(delta)}
         </span>
       </div>
     </Card>

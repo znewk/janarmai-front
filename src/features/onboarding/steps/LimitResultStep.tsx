@@ -8,6 +8,7 @@ export interface ResultCardSpec {
   cardType: CardType;
   dailyLimitL: number | null;
   priceEligible: boolean;
+  monitoringOnly?: boolean;
 }
 
 interface Props {
@@ -25,9 +26,15 @@ export function LimitResultStep({ specs, onContinue }: Props) {
           <Card key={i} className="items-center text-center">
             <CheckCircle2 className="mx-auto h-8 w-8 text-status-ok" />
             <p className="text-sm text-gray-500">{CARD_TYPE_LABEL[spec.cardType]}</p>
-            <p className="text-2xl font-bold text-gray-900">{spec.dailyLimitL !== null ? `${spec.dailyLimitL} л/сутки` : 'без лимита'}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {spec.monitoringOnly ? 'Учёт покупок' : spec.dailyLimitL !== null ? `${spec.dailyLimitL} л/сутки` : 'без лимита'}
+            </p>
             <p className="text-xs text-gray-400">
-              {spec.priceEligible ? 'Льготная цена в пределах суточного лимита' : 'Льготный лимит не применяется — отпуск по предельной цене'}
+              {spec.monitoringOnly
+                ? 'Суточный лимит не задан — карта только показывает объём купленного топлива'
+                : spec.priceEligible
+                  ? 'Льготная цена в пределах суточного лимита'
+                  : 'Льготный лимит не применяется — отпуск по предельной цене'}
             </p>
           </Card>
         ))}

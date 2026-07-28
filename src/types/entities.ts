@@ -62,18 +62,27 @@ export interface Card {
   vehicleId?: string;
   /** Маскированный ИИН/БИН для отображения на карточке (8.2). */
   maskedIdentifier: string;
-  /** null — льготный лимит не применяется (иностранец / ЮЛ-нерезидент), обслуживание по предельной цене без потолка. */
+  /** null — льготный лимит не применяется (иностранец / ЮЛ-нерезидент, либо monitoringOnly), обслуживание по предельной цене без потолка. */
   dailyLimitL: number | null;
   usedTodayL: number;
   /** Признак применимости льготной цены к владельцу карты. */
   priceEligible: boolean;
+  /**
+   * Карта только для наблюдения за объёмом покупок топлива — без суточного лимита и без льготной
+   * цены (dailyLimitL всегда null, priceEligible всегда false), но, в отличие от иностранца/
+   * ЮЛ-нерезидента, это не «безлимитная» карта в смысле квотирования — квотирование к ней просто
+   * не применяется по замыслу, UI не должен использовать слово «безлимит», только показывать
+   * фактический объём купленного топлива (см. LimitProgressBar.tsx, CardMunai.tsx).
+   */
+  monitoringOnly?: boolean;
   resetAt: string;
   qrToken: string;
   qrUpdatedAt: string;
   active: boolean;
 }
 
-export type FuelType = 'ai92' | 'ai95' | 'ai98' | 'dt';
+/** ДТ разбито на летнее/зимнее — сорта различаются плотностью и ценой (ГОСТ 32511-2013), как на реальных АЗС РК. */
+export type FuelType = 'ai92' | 'ai95' | 'ai98' | 'ai100' | 'dt_summer' | 'dt_winter';
 export type PriceType = 'preferential' | 'market';
 
 export interface Transaction {

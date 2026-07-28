@@ -95,9 +95,7 @@ export function TransactionHistoryPage() {
       onChange: setFuelType,
       options: [
         { value: 'all', label: 'Всё топливо' },
-        { value: 'ai92', label: FUEL_TYPE_LABEL.ai92 },
-        { value: 'ai95', label: FUEL_TYPE_LABEL.ai95 },
-        { value: 'dt', label: FUEL_TYPE_LABEL.dt },
+        ...Object.entries(FUEL_TYPE_LABEL).map(([value, label]) => ({ value, label })),
       ],
     },
   ];

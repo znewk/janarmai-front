@@ -41,6 +41,12 @@ export function HomePage() {
   );
   const myCardIds = myCards.map((c) => c.id);
 
+  const monitoringCard = myCards.find((c) => c.monitoringOnly);
+  const monitoringTotalL = useMemo(
+    () => (monitoringCard ? transactions.filter((t) => t.cardId === monitoringCard.id).reduce((s, t) => s + t.volumeL, 0) : 0),
+    [transactions, monitoringCard],
+  );
+
   const totals = useMemo(() => {
     const withLimit = myCards.filter((c) => c.dailyLimitL !== null);
     const usedL = withLimit.reduce((sum, c) => sum + c.usedTodayL, 0);
@@ -114,16 +120,25 @@ export function HomePage() {
         <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/5" />
         <div className="absolute -bottom-8 right-10 h-20 w-20 rounded-full bg-orange-500/20" />
         <div className="relative">
-          <p className="text-xs text-navy-200">Остаток лимита на сегодня</p>
-          {totals.hasLimit ? (
+          {monitoringCard ? (
             <>
+              <p className="text-xs text-navy-200">Куплено топлива за всё время</p>
+              <p className="mt-1 text-3xl font-bold text-orange-400">{monitoringTotalL} л</p>
+              <p className="mt-1 text-xs text-navy-300">Сегодня: {monitoringCard.usedTodayL} л</p>
+            </>
+          ) : totals.hasLimit ? (
+            <>
+              <p className="text-xs text-navy-200">Остаток лимита на сегодня</p>
               <p className="mt-1 text-3xl font-bold text-orange-400">{totals.remainingL} л</p>
               <p className="mt-1 text-xs text-navy-300">
                 Использовано {totals.usedL} из {totals.limitL} л
               </p>
             </>
           ) : (
-            <p className="mt-1 text-2xl font-bold text-orange-400">без лимита</p>
+            <>
+              <p className="text-xs text-navy-200">Остаток лимита на сегодня</p>
+              <p className="mt-1 text-2xl font-bold text-orange-400">без лимита</p>
+            </>
           )}
           <Button type="button" onClick={() => navigate('/card')} className="mt-4 rounded-full">
             <Fuel className="h-4 w-4" />

@@ -21,6 +21,16 @@ export interface CardSpec {
   ownerKind: 'user' | 'vehicle';
   dailyLimitL: number | null;
   priceEligible: boolean;
+  monitoringOnly?: boolean;
+}
+
+/**
+ * Демо-версия карты «только мониторинг» — по запросу показать, как система выглядит для держателя,
+ * на которого квотирование не распространяется вовсе: без суточного лимита, без льготной цены, но
+ * карта не подаётся как «безлимитная льгота» — просто отслеживает объём купленного топлива.
+ */
+export function deriveMonitoringCardSpec(): CardSpec {
+  return { cardType: 'fl_person', ownerKind: 'user', dailyLimitL: null, priceEligible: false, monitoringOnly: true };
 }
 
 export function deriveFlCardSpecs(params: { residency: Residency; vehicleCategories: VehicleCategory[] }): CardSpec[] {
@@ -61,6 +71,7 @@ export function materializeCard(spec: CardSpec, owner: { userId?: string; vehicl
     maskedIdentifier: owner.maskedIdentifier,
     dailyLimitL: spec.dailyLimitL,
     priceEligible: spec.priceEligible,
+    monitoringOnly: spec.monitoringOnly ?? false,
     usedTodayL: 0,
     resetAt: getNextAstanaMidnightISO(),
     qrToken: generateQrToken(),

@@ -1,5 +1,5 @@
 import type { Card } from '@/types/entities';
-import { deriveFlCardSpecs, deriveUlCardSpec } from '@/lib/cardRules';
+import { deriveFlCardSpecs, deriveUlCardSpec, deriveMonitoringCardSpec } from '@/lib/cardRules';
 import { maskIdentifier } from '@/lib/mask';
 import { getNextAstanaMidnightISO } from '@/lib/time';
 import { generateQrToken } from '@/lib/id';
@@ -24,6 +24,18 @@ function buildFlCards(): Card[] {
   const cards: Card[] = [];
   for (const user of usersSeed) {
     if (user.id.startsWith('user_director_')) continue; // директора получают карты только если сами являются держателями (в MVP — нет)
+    // демо-аккаунт «только мониторинг» (см. deriveMonitoringCardSpec) — не выводится через обычную деривацию по резидентству/ТС
+    if (user.id === 'user_fl_monitor') {
+      cards.push(
+        buildCard({
+          id: `card_${user.id}`,
+          userId: user.id,
+          maskedIdentifier: maskIdentifier(user.iin ?? user.passportNumber),
+          ...deriveMonitoringCardSpec(),
+        }),
+      );
+      continue;
+    }
     const vehicles = vehiclesSeed.filter((v) => v.ownerKind === 'user' && v.ownerId === user.id);
     const specs = deriveFlCardSpecs({ residency: user.residency, vehicleCategories: vehicles.map((v) => v.category) });
     let truckIdx = 0;

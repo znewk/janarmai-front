@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserStore } from '@/store/user.store';
 import { useCardStore } from '@/store/card.store';
+import { useTransactionStore } from '@/store/transaction.store';
 import { CARD_TYPE_LABEL } from '@/lib/cardLabels';
 import { selectSessionCards } from '@/lib/sessionCards';
 
@@ -29,6 +30,7 @@ export function CardScreenPage() {
   const vehicles = useUserStore((s) => s.vehicles);
   const cards = useCardStore((s) => s.cards);
   const regenerateQrToken = useCardStore((s) => s.regenerateQrToken);
+  const transactions = useTransactionStore((s) => s.transactions);
 
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [showIssuedBanner, setShowIssuedBanner] = useState(() => Boolean((location.state as { justIssued?: boolean } | null)?.justIssued));
@@ -78,7 +80,12 @@ export function CardScreenPage() {
   const holderName = company ? company.name : (user?.fio ?? '');
   const vehicle = activeCard.vehicleId ? vehicles.find((v) => v.id === activeCard.vehicleId) : undefined;
   const cardLabel = `${CARD_TYPE_LABEL[activeCard.cardType]}${vehicle ? ` · ${vehicle.grnz}` : ''}`;
-  const remainingLabel = activeCard.dailyLimitL !== null ? `${Math.max(activeCard.dailyLimitL - activeCard.usedTodayL, 0)} л` : 'без лимита';
+  const totalPurchasedL = activeCard.monitoringOnly ? transactions.filter((t) => t.cardId === activeCard.id).reduce((s, t) => s + t.volumeL, 0) : 0;
+  const remainingLabel = activeCard.monitoringOnly
+    ? `${totalPurchasedL} л`
+    : activeCard.dailyLimitL !== null
+      ? `${Math.max(activeCard.dailyLimitL - activeCard.usedTodayL, 0)} л`
+      : 'без лимита';
 
   return (
     <div className="space-y-5 p-4">
@@ -115,11 +122,12 @@ export function CardScreenPage() {
         cardLabel={cardLabel}
         qrToken={activeCard.qrToken}
         remainingLabel={remainingLabel}
+        remainingCaption={activeCard.monitoringOnly ? 'Куплено топлива' : undefined}
         qrRefreshSeconds={QR_REFRESH_SECONDS}
         onExpandQr={() => setQrExpanded(true)}
       />
 
-      <LimitProgressBar usedL={activeCard.usedTodayL} limitL={activeCard.dailyLimitL} />
+      <LimitProgressBar usedL={activeCard.usedTodayL} limitL={activeCard.dailyLimitL} monitoringOnly={activeCard.monitoringOnly} />
 
       <Card className="gap-0 divide-y divide-gray-100 p-0">
         <div className="flex items-center gap-3 px-4 py-3">

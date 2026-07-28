@@ -39,11 +39,11 @@ async function run() {
 
   console.log('\n=== Заправка карты без лимита (иностранец) — всегда по предельной цене ===');
   const foreignCard = useCardStore.getState().cards.find((c) => c.cardType === 'fl_person')!;
-  const r4 = simulateFueling({ cardId: foreignCard.id, fuelType: 'dt', volumeL: 200 });
+  const r4 = simulateFueling({ cardId: foreignCard.id, fuelType: 'dt_summer', volumeL: 200 });
   console.log('priceType:', r4.transaction.priceType, '| usedTodayL:', r4.card.usedTodayL, '| remaining:', r4.remainingL);
   if (r4.transaction.priceType !== 'market' || r4.remainingL !== null) throw new Error('FAIL: карта без лимита всегда по предельной цене, remaining=null');
 
-  const txnCountBefore = 11; // seed
+  const txnCountBefore = 14; // seed
   const txnCountAfter = useTransactionStore.getState().transactions.length;
   console.log('\nТранзакций в истории:', txnCountAfter, `(seed ${txnCountBefore} + 4 новых)`);
   if (txnCountAfter !== txnCountBefore + 4) throw new Error('FAIL: не все транзакции сохранены в историю');

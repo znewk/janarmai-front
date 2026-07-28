@@ -52,15 +52,15 @@ async function run() {
 
   console.log('\n=== Плотность топлива — коэффициенты и конверсия ===');
   console.log(FUEL_DENSITY_T_PER_M3);
-  if (Object.keys(FUEL_DENSITY_T_PER_M3).length !== 4) throw new Error('FAIL: ожидалось 4 марки топлива (АИ-92/95/98/ДТ)');
-  const testTons = litersToTons(1000, 'dt');
-  console.log('1000 л ДТ =', testTons, 'т (ожидалось 0.84)');
-  if (Math.abs(testTons - 0.84) > 1e-9) throw new Error('FAIL: неверная конверсия литров в тонны для ДТ');
+  if (Object.keys(FUEL_DENSITY_T_PER_M3).length !== 6) throw new Error('FAIL: ожидалось 6 марок топлива (АИ-92/95/98/100, ДТ летнее/зимнее)');
+  const testTons = litersToTons(1000, 'dt_summer');
+  console.log('1000 л ДТ (летнее) =', testTons, 'т (ожидалось 0.84)');
+  if (Math.abs(testTons - 0.84) > 1e-9) throw new Error('FAIL: неверная конверсия литров в тонны для ДТ (летнее)');
 
   console.log('\n=== Главный показатель №1 — объём по маркам топлива (тонны) ===');
   const fuelBreakdown = computeFuelBreakdown(regionFuelFactsSeed, DEFAULT_FILTERS);
   console.log(fuelBreakdown.map((f: { fuelType: string; volumeT: number; deltaPct: number }) => `${f.fuelType}: ${f.volumeT.toFixed(1)} т (${f.deltaPct >= 0 ? '+' : ''}${f.deltaPct}%)`));
-  if (fuelBreakdown.length !== 4) throw new Error('FAIL: ожидалось 4 марки в разбивке по умолчанию (фильтр марки = «все»)');
+  if (fuelBreakdown.length !== 6) throw new Error('FAIL: ожидалось 6 марок в разбивке по умолчанию (фильтр марки = «все»)');
   if (fuelBreakdown.some((f: { volumeT: number }) => f.volumeT <= 0)) throw new Error('FAIL: объём по каждой марке должен быть положительным за 30-дневный период по умолчанию');
   const totalT = fuelBreakdown.reduce((s: number, f: { volumeT: number }) => s + f.volumeT, 0);
   console.log('объём не круглое число:', !isSuspiciouslyRound(Math.round(totalT * 10)));
@@ -109,7 +109,7 @@ async function run() {
   console.log('\n=== Боковая панель тепловой карты (детали региона) ===');
   const detail = computeRegionDetail(regionFuelFactsSeed, DEFAULT_FILTERS, 'Костанайская');
   console.log(`регион: ${detail.region}, доля нерезидентов: ${detail.nonresidentSharePct}%, доля сверх лимита: ${detail.overLimitVolumeSharePct}%, марок в разбивке: ${detail.fuelBreakdown.length}`);
-  if (detail.fuelBreakdown.length !== 4) throw new Error('FAIL: боковая панель должна показывать разбивку по всем 4 маркам топлива по умолчанию');
+  if (detail.fuelBreakdown.length !== 6) throw new Error('FAIL: боковая панель должна показывать разбивку по всем 6 маркам топлива по умолчанию');
 
   console.log('\n=== Классификатор аномалий — 3 категории ===');
   const anomalies = computeAnomalyClassifier(regionFuelFactsSeed, DEFAULT_FILTERS);

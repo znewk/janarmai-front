@@ -17,6 +17,16 @@ export const usersSeed: User[] = [
     createdAt: '2026-06-01T05:00:00.000Z',
   },
   {
+    id: 'user_fl_monitor',
+    type: 'fl',
+    residency: 'resident',
+    fio: 'Дюсенова Сауле Максатовна',
+    phone: '+77011234505',
+    channel: 'egov',
+    iin: '880202300234',
+    createdAt: '2026-06-01T05:30:00.000Z',
+  },
+  {
     id: 'user_fl_kmg',
     type: 'fl',
     residency: 'resident',

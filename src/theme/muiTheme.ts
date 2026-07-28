@@ -6,6 +6,13 @@ import { navy, orange } from './colors';
  * место в проекте, где используется MUI (по прямому запросу пользователя, остальной UI — на
  * shadcn/Tailwind). Палитра подогнана под фирменные navy/orange, чтобы дейтпикер не выглядел
  * инородным элементом на дашборде.
+ *
+ * ВАЖНО: borderRadius и видимый бордер (`notchedOutline`) намеренно выровнены под `SelectTrigger`
+ * из shadcn (соседние поля фильтра) — раньше здесь был `borderRadius: 999` (полная пилюля) и
+ * `notchedOutline: { borderColor: 'transparent' }` (бордер невидим), из-за чего дата-поля читались
+ * как элемент другой дизайн-системы рядом с обычными Select (см. правки по стилям фильтра,
+ * PROGRESS.md). Активное/hover/focus состояние подсвечивается точечно через `MuiDateField.tsx`
+ * (проп `active`) — здесь заданы только базовые (неактивные) значения.
  */
 export const muiTheme = createTheme({
   palette: {
@@ -17,23 +24,33 @@ export const muiTheme = createTheme({
     fontFamily: 'inherit',
     fontSize: 13,
   },
-  shape: { borderRadius: 10 },
+  shape: { borderRadius: 6 },
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: 999,
+          borderRadius: 6,
           backgroundColor: '#fff',
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: navy[200],
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: orange[500],
+            borderWidth: 1,
+          },
         },
         notchedOutline: {
-          borderColor: 'transparent',
+          borderColor: navy[100],
+        },
+        input: {
+          padding: '8px 10px',
         },
       },
     },
     MuiInputBase: {
       styleOverrides: {
         root: {
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           fontWeight: 500,
           color: navy[600],
         },
@@ -50,7 +67,7 @@ export const muiTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 14,
+          borderRadius: 8,
         },
       },
     },
