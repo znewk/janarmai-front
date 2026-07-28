@@ -20,7 +20,11 @@
     "smoke:all": "npm run smoke:mocks && npm run smoke:persist && npm run smoke:registration && npm run smoke:auth && npm run smoke:fueling && npm run smoke:cabinet && npm run smoke:analytics && npm run smoke:reset && npm run smoke:heatmap"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.4.0",
+    "@mui/material": "^9.2.0",
+    "@mui/x-date-pickers": "^9.10.1",
     "@radix-ui/react-dialog": "^1.1.21",
     "@radix-ui/react-label": "^2.1.13",
     "@radix-ui/react-progress": "^1.1.14",
@@ -30,6 +34,7 @@
     "@radix-ui/react-tabs": "^1.1.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "file-saver": "^2.0.5",
     "lucide-react": "^1.25.0",
     "qrcode.react": "^4.2.0",

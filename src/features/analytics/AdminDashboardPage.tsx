@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownRight, Gauge, Globe, TrendingDown, type LucideIcon } from 'lucide-react';
-import { KpiTile } from '@/components/ui/KpiTile';
 import { ChartLine } from '@/components/ui/ChartLine';
 import { ChartDonut } from '@/components/ui/ChartDonut';
 import { ChartBar } from '@/components/ui/ChartBar';
@@ -10,6 +9,7 @@ import { AnomalyCategoryCard } from '@/components/ui/AnomalyCategoryCard';
 import { NetworkRiskList } from '@/components/ui/NetworkRiskList';
 import { GapByCounterpartyList } from '@/components/ui/GapByCounterpartyList';
 import { FuelVolumeBreakdown } from '@/components/ui/FuelVolumeBreakdown';
+import { OverLimitShareCard } from '@/components/ui/OverLimitShareCard';
 import { AnalyticsFilterBar } from '@/components/ui/AnalyticsFilterBar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,7 +121,7 @@ export function AdminDashboardPage() {
               <CardTitle>Объём реализации по маркам топлива</CardTitle>
               <CardDescription>тонны, дельта к предыдущему периоду той же длины</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-1 flex-col">
               <FuelVolumeBreakdown items={fuelBreakdown} />
             </CardContent>
           </Card>
@@ -132,18 +132,18 @@ export function AdminDashboardPage() {
               <CardDescription>закуп по СУНП vs фактическая реализация JanarmAI, по регионам РК</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-3 flex items-end gap-6">
-                <div>
-                  <p className="text-xs text-navy-400">Закуп (СУНП)</p>
-                  <p className="text-2xl font-bold text-navy-900">{formatTons(sunp.purchaseT, 0)}</p>
+              <div className="mb-4 grid grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-navy-50 p-4">
+                  <p className="text-xs font-semibold tracking-wide text-navy-500 uppercase">Закуп (СУНП)</p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums text-navy-900">{formatTons(sunp.purchaseT, 0)}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-navy-400">Факт (JanarmAI)</p>
-                  <p className="text-2xl font-bold text-navy-900">{formatTons(sunp.realizedT, 0)}</p>
+                <div className="rounded-2xl bg-navy-50 p-4">
+                  <p className="text-xs font-semibold tracking-wide text-navy-500 uppercase">Факт (JanarmAI)</p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums text-navy-900">{formatTons(sunp.realizedT, 0)}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-navy-400">Соотношение</p>
-                  <p className="text-2xl font-bold text-orange-600">{sunp.ratioPct}%</p>
+                <div className="rounded-2xl bg-orange-50 p-4">
+                  <p className="text-xs font-semibold tracking-wide text-orange-700 uppercase">Соотношение</p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums text-orange-600">{sunp.ratioPct}%</p>
                 </div>
               </div>
               <ChartLine
@@ -170,20 +170,15 @@ export function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <AnalyticsFilterBar filters={nonresidentFilters} onChange={handleNonresidentFiltersChange} fields={['date', 'region']} className="mb-4" />
-              <p className="mb-2 text-3xl font-bold text-orange-600">{nonresident.sharePct}%</p>
-              <ChartLine data={nonresident.trend} xKey="label" series={[{ key: 'sharePct', label: 'Доля нерезидентов, %', color: chartCategorical.orange }]} height={160} />
+              <div className="mb-3 rounded-2xl bg-orange-50 p-4">
+                <p className="text-xs font-semibold tracking-wide text-orange-700 uppercase">Доля нерезидентам</p>
+                <p className="mt-1 text-4xl font-bold tabular-nums text-orange-600">{nonresident.sharePct}%</p>
+              </div>
+              <ChartLine data={nonresident.trend} xKey="label" series={[{ key: 'sharePct', label: 'Доля нерезидентов, %', color: chartCategorical.orange }]} height={140} />
             </CardContent>
           </Card>
 
-          <KpiTile
-            label="Доля операций сверх лимита"
-            formattedValue={`${overLimit.volumeSharePct}%`}
-            secondaryLabel={`${overLimit.opsSharePct}% по количеству операций`}
-            deltaPct={overLimit.deltaPct}
-            comparisonLabel="по объёму, к предыдущему периоду той же длины"
-            goodDirection="down"
-            sparkline={overLimit.trend.map((t) => t.sharePct)}
-          />
+          <OverLimitShareCard result={overLimit} />
         </div>
       </section>
 

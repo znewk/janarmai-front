@@ -1,10 +1,14 @@
+import { ThemeProvider } from '@mui/material/styles';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ru } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
-import { Input } from './input';
-import { Label } from './label';
+import { MuiDateField } from './MuiDateField';
 import type { DashboardFilters } from '@/lib/analyticsCompute';
 import { REGION_OPTIONS, FUEL_OPTIONS } from '@/lib/analyticsCompute';
 import { FUEL_TYPE_LABEL } from '@/mocks/seed';
 import type { FuelType } from '@/types/entities';
+import { muiTheme } from '@/theme/muiTheme';
 
 export type AnalyticsFilterField = 'date' | 'region' | 'fuel' | 'residency' | 'ownerType';
 
@@ -39,32 +43,14 @@ export function AnalyticsFilterBar({ filters, onChange, fields = ALL_FIELDS, cla
   return (
     <div className={`flex flex-wrap items-end gap-3 ${className ?? ''}`}>
       {fields.includes('date') && (
-        <div className="flex items-end gap-2">
-          <div className="space-y-1">
-            <Label htmlFor="filter-date-from" className="text-[11px] text-navy-400">
-              Период с
-            </Label>
-            <Input
-              id="filter-date-from"
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) => onChange({ dateFrom: e.target.value })}
-              className="h-9 w-[150px] rounded-full text-xs"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="filter-date-to" className="text-[11px] text-navy-400">
-              по
-            </Label>
-            <Input
-              id="filter-date-to"
-              type="date"
-              value={filters.dateTo}
-              onChange={(e) => onChange({ dateTo: e.target.value })}
-              className="h-9 w-[150px] rounded-full text-xs"
-            />
-          </div>
-        </div>
+        <ThemeProvider theme={muiTheme}>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
+            <div className="flex items-end gap-2">
+              <MuiDateField label="Период с" value={filters.dateFrom} onChange={(v) => onChange({ dateFrom: v })} />
+              <MuiDateField label="по" value={filters.dateTo} onChange={(v) => onChange({ dateTo: v })} />
+            </div>
+          </LocalizationProvider>
+        </ThemeProvider>
       )}
 
       {fields.includes('region') && (

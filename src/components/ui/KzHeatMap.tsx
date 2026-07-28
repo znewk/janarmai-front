@@ -64,8 +64,14 @@ function markerRadius(value: number, min: number, max: number): number {
  * областных центров — центроид достаточен для демо, см. допущение в OPEN_QUESTIONS.md).
  * Границы: geokz (github.com/arodionoff/geokz, CC BY 4.0), на основе UN OCHA COD-AB Kazakhstan.
  */
+/** Регион с наивысшим риск-баллом — предвыбран по умолчанию, чтобы панель справа не пустовала до первого клика. */
+function highestRiskRegion(data: RegionConsumptionPoint[]): string | null {
+  if (data.length === 0) return null;
+  return data.reduce((max, r) => (r.riskScore > max.riskScore ? r : max), data[0]).name;
+}
+
 export function KzHeatMap({ data, facts, filters }: KzHeatMapProps) {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(() => highestRiskRegion(data));
   const byName = useMemo(() => new Map(data.map((r) => [r.name, r])), [data]);
   const volumeValues = data.map((r) => r.consumptionIndex);
   const volumeMin = Math.min(...volumeValues);
