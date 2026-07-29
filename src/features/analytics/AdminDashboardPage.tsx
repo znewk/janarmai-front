@@ -188,7 +188,7 @@ export function AdminDashboardPage() {
               />
               <Separator className="my-4" />
               <p className="mb-2 text-xs font-semibold text-navy-600">Разрыв по топ-5 контрагентам/сетям</p>
-              <GapByCounterpartyList counterparties={procurementGapByCounterpartySeed} />
+              <GapByCounterpartyList counterparties={procurementGapByCounterpartySeed} totalGapT={sunp.purchaseT - sunp.realizedT} />
             </CardContent>
           </Card>
         </div>

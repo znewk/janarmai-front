@@ -87,7 +87,7 @@ export function CabinetFlPage() {
         {myCards.map((card) => {
           const totalPurchasedL = card.monitoringOnly ? transactions.filter((t) => t.cardId === card.id).reduce((s, t) => s + t.volumeL, 0) : 0;
           const remainingLabel = card.monitoringOnly
-            ? `${totalPurchasedL} л`
+            ? `${card.usedTodayL} л`
             : card.dailyLimitL !== null
               ? `${Math.max(card.dailyLimitL - card.usedTodayL, 0)} л`
               : 'без лимита';
@@ -99,10 +99,14 @@ export function CabinetFlPage() {
                 cardLabel={CARD_TYPE_LABEL[card.cardType]}
                 qrToken={card.qrToken}
                 remainingLabel={remainingLabel}
-                remainingCaption={card.monitoringOnly ? 'Куплено топлива' : undefined}
+                remainingCaption={card.monitoringOnly ? 'Куплено топлива сегодня' : undefined}
                 onExpandQr={() => setExpandedCardId(card.id)}
               />
-              <LimitProgressBar usedL={card.usedTodayL} limitL={card.dailyLimitL} monitoringOnly={card.monitoringOnly} />
+              <LimitProgressBar
+                usedL={card.monitoringOnly ? totalPurchasedL : card.usedTodayL}
+                limitL={card.dailyLimitL}
+                monitoringOnly={card.monitoringOnly}
+              />
             </div>
           );
         })}

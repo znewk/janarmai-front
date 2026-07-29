@@ -16,7 +16,8 @@ import { cn } from '@/lib/utils';
 
 export type AnalyticsFilterField = 'date' | 'region' | 'fuel' | 'residency' | 'ownerType';
 
-const ALL_FIELDS: AnalyticsFilterField[] = ['date', 'region', 'fuel', 'residency', 'ownerType'];
+/** «Держатель» (ownerType) убран из дефолтного набора полей по запросу ПМ — поле в типе/стейте фильтров осталось (для совместимости с analyticsCompute), просто больше нигде не показывается в UI. */
+const ALL_FIELDS: AnalyticsFilterField[] = ['date', 'region', 'fuel', 'residency'];
 
 const RESIDENCY_OPTIONS: { value: DashboardFilters['residency']; label: string }[] = [
   { value: 'all', label: 'Все' },

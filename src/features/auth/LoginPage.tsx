@@ -4,12 +4,14 @@ import { Smartphone, Wallet, Building2, User as UserIcon } from 'lucide-react';
 import { ChannelCard } from '@/components/ui/ChannelCard';
 import { OtpInput } from '@/components/ui/OtpInput';
 import { SmsStep } from '@/features/onboarding/steps/SmsStep';
+import { EgovMobileHomeMock } from '@/features/onboarding/EgovMobileHomeMock';
+import { EgovSsoLoadingMock } from './EgovSsoLoadingMock';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useUserStore } from '@/store/user.store';
 
-type Method = 'method' | 'egov-bvu' | 'kmg-phone' | 'kmg-sms' | 'ul-bin' | 'ul-code';
+type Method = 'method' | 'egov-bvu' | 'egov-app' | 'egov-loading' | 'kmg-phone' | 'kmg-sms' | 'ul-bin' | 'ul-code';
 
 /** /login — авторизация в уже созданный аккаунт, все способы (S-15..S-17, ТЗ 4.6). */
 export function LoginPage() {
@@ -38,7 +40,7 @@ export function LoginPage() {
 
   const handleEgovBvuPick = (userId: string) => {
     setSigningInId(userId);
-    setTimeout(() => finishLogin(userId), 500);
+    setStep('egov-app');
   };
 
   const handlePhoneSubmit = () => {
@@ -75,13 +77,26 @@ export function LoginPage() {
     if (company) finishLogin(company.directorId, company.id);
   };
 
+  if (step === 'egov-app') {
+    return <EgovMobileHomeMock onOpenApp={() => setStep('egov-loading')} />;
+  }
+
+  if (step === 'egov-loading') {
+    return <EgovSsoLoadingMock onDone={() => signingInId && finishLogin(signingInId)} />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col p-6">
       <h1 className="mb-6 text-lg font-bold text-gray-900">Вход в аккаунт</h1>
 
       {step === 'method' && (
         <div className="space-y-3">
-          <ChannelCard icon={Smartphone} title="eGov Mobile / БВУ" subtitle="Войти через приложение eGov или Банк" onClick={() => setStep('egov-bvu')} />
+          <ChannelCard
+            icon={Smartphone}
+            title="Имитация входа через eGov"
+            subtitle="Войти через приложение eGov или Банк"
+            onClick={() => setStep('egov-bvu')}
+          />
           <ChannelCard icon={Wallet} title="По номеру телефона" subtitle="Вход по SMS-коду" onClick={() => setStep('kmg-phone')} />
           <ChannelCard icon={Building2} title="Для бизнеса" subtitle="Вход по БИН и электронной подписи" onClick={() => setStep('ul-bin')} />
           <p className="mt-6 text-center text-xs text-gray-400">Демо-режим: доступны все способы входа на тестовых данных — подсказки будут на следующем экране</p>

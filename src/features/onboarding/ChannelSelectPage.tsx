@@ -26,7 +26,7 @@ export function ChannelSelectPage() {
       <div className="space-y-3">
         <ChannelCard
           icon={Smartphone}
-          title="Через eGov / банковское приложение"
+          title="Имитация регистрации через приложение eGov"
           subtitle="Быстрая регистрация без ввода данных"
           onClick={() => navigate('/register/egov-bvu')}
         />

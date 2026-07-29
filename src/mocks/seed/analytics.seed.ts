@@ -32,24 +32,28 @@ export const MONTH_LABELS = ['Авг', 'Сен', 'Окт', 'Ноя', 'Дек', '
 
 export interface GapCounterparty {
   name: string;
-  gapVolumeL: number;
   gapSharePct: number;
 }
 
 const gapRng = mulberry32(4402);
-const GAP_COUNTERPARTIES = ['КМГ АЗС', 'Sinooil', 'Гелиос', 'ТОО «НефтеТрейд Империал»', 'ИП Байсеитов А.М.'];
-/** Совокупный разрыв закуп/факт за период — независимая (от факт-таблицы) оценка, тот же порядок величины. */
-const TOTAL_GAP_L = 3_180_000 + Math.round(randRange(gapRng, -120_000, 140_000));
+/** «КМГ АЗС» намеренно не в списке — это собственная сеть оператора системы, странно показывать
+ * её главным источником разрыва закуп/факт; здесь — независимые трейдеры/сети (Deep Dive 4.2, кейс Кении). */
+const GAP_COUNTERPARTIES = ['ТОО «Батыс МунайТрейд»', 'Sinooil', 'Гелиос', 'ТОО «НефтеТрейд Империал»', 'ИП Байсеитов А.М.'];
 
 /** Долгий хвост, не равномерное деление — один контрагент даёт заметно больше остальных (типичная картина в реальных аудитах). */
 const rawGapWeights = GAP_COUNTERPARTIES.map((_, i) => (i === 0 ? randRange(gapRng, 32, 41) : randRange(gapRng, 6, 22)));
 const gapWeightSum = rawGapWeights.reduce((a, b) => a + b, 0);
 
-/** Переименовано из `legalityGapByCounterpartySeed` — слово «легальность» больше не используется в UI-контексте. */
-export const procurementGapByCounterpartySeed: GapCounterparty[] = GAP_COUNTERPARTIES.map((name, i) => {
-  const gapSharePct = Math.round((rawGapWeights[i] / gapWeightSum) * 1000) / 10;
-  return { name, gapSharePct, gapVolumeL: Math.round((TOTAL_GAP_L * rawGapWeights[i]) / gapWeightSum) };
-}).sort((a, b) => b.gapSharePct - a.gapSharePct);
+/**
+ * Переименовано из `legalityGapByCounterpartySeed` — слово «легальность» больше не используется в UI-контексте.
+ * Хранит только ДОЛИ (не абсолютные литры/тонны) — общий объём разрыва берётся из настоящей сверки
+ * СУНП (`computeSunpReconciliation`, реагирует на фильтры), иначе цифры в разбивке по контрагентам
+ * расходились бы с показателями «Реализация СУНП» / «Факт JanarmAI» выше на дашборде.
+ */
+export const procurementGapByCounterpartySeed: GapCounterparty[] = GAP_COUNTERPARTIES.map((name, i) => ({
+  name,
+  gapSharePct: Math.round((rawGapWeights[i] / gapWeightSum) * 1000) / 10,
+})).sort((a, b) => b.gapSharePct - a.gapSharePct);
 
 // ---------------------------------------------------------------------------
 // Рейтинг сетей АЗС (A-03) — авторизации vs чеки ОФД + риск-балл по сети

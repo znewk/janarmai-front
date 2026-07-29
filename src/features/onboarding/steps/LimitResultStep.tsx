@@ -27,11 +27,11 @@ export function LimitResultStep({ specs, onContinue }: Props) {
             <CheckCircle2 className="mx-auto h-8 w-8 text-status-ok" />
             <p className="text-sm text-gray-500">{CARD_TYPE_LABEL[spec.cardType]}</p>
             <p className="text-2xl font-bold text-gray-900">
-              {spec.monitoringOnly ? 'Учёт покупок' : spec.dailyLimitL !== null ? `${spec.dailyLimitL} л/сутки` : 'без лимита'}
+              {spec.monitoringOnly ? 'Карта выпущена' : spec.dailyLimitL !== null ? `${spec.dailyLimitL} л/сутки` : 'без лимита'}
             </p>
             <p className="text-xs text-gray-400">
               {spec.monitoringOnly
-                ? 'Суточный лимит не задан — карта только показывает объём купленного топлива'
+                ? 'Все покупки топлива будут видны прямо на карте'
                 : spec.priceEligible
                   ? 'Льготная цена в пределах суточного лимита'
                   : 'Льготный лимит не применяется — отпуск по предельной цене'}

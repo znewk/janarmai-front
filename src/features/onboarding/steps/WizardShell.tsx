@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PhoneStatusBar } from '@/components/ui/PhoneStatusBar';
 
 export interface WizardShellProps {
   title: string;
@@ -14,6 +15,7 @@ export interface WizardShellProps {
 export function WizardShell({ title, stepIndex, stepCount, onBack, children }: WizardShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
+      <PhoneStatusBar timeClassName="text-orange-500" className="bg-gray-50" />
       <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/95 px-4 py-3 backdrop-blur">
         {onBack ? (
           <Button type="button" variant="outline" size="icon" onClick={onBack} aria-label="Назад" className="shrink-0">

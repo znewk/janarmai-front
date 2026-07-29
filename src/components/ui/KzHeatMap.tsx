@@ -5,15 +5,9 @@ import { MapPin, TrendingUp, TrendingDown, Minus, ArrowUpDown, ArrowUp, ArrowDow
 import type { RegionConsumptionPoint, RegionFuelDailyFact } from '@/mocks/seed';
 import { FUEL_TYPE_LABEL } from '@/mocks/seed';
 import { RISK_TIER_COLOR, RISK_TIER_LABEL } from '@/lib/riskTier';
-import {
-  computeRegionDetail,
-  computeRegionSummaries,
-  VOLUME_GROWTH_NOTABLE_THRESHOLD_PCT,
-  type DashboardFilters,
-  type RegionSummaryRow,
-  type ShareTone,
-} from '@/lib/analyticsCompute';
+import { computeRegionDetail, computeRegionSummaries, VOLUME_GROWTH_NOTABLE_THRESHOLD_PCT, type DashboardFilters } from '@/lib/analyticsCompute';
 import { TONE_ICON, TONE_TEXT, TONE_BG, REGION_STATUS_EXPLANATION, VOLUME_GROWTH_EXPLANATION } from '@/lib/shareToneUI';
+import { SUMMARY_COLUMNS, sortSummaries, type SummarySortField } from '@/lib/regionSummaryTable';
 import { InfoTooltip } from './InfoTooltip';
 import { cn } from '@/lib/utils';
 import kzGeo from '@/mocks/geo/kz-oblasts.json';
@@ -31,26 +25,6 @@ const MARKER_MIN_RADIUS = 3;
 const MARKER_MAX_RADIUS = 11;
 
 const TONE_LABEL = { ok: 'Низкий', warning: 'Средний', critical: 'Высокий' } as const;
-
-type SummarySortField = 'region' | 'volumeT' | 'volumeSharePctOfRK' | 'volumeDeltaPct' | 'nonresidentSharePct' | 'overLimitSharePct' | 'status';
-
-const STATUS_SORT_RANK: Record<ShareTone, number> = { ok: 0, warning: 1, critical: 2 };
-
-const SUMMARY_COLUMNS: { field: SummarySortField; label: string }[] = [
-  { field: 'region', label: 'Регион' },
-  { field: 'volumeT', label: 'Объём' },
-  { field: 'volumeSharePctOfRK', label: '% от объёма РК' },
-  { field: 'volumeDeltaPct', label: 'Рост объёма' },
-  { field: 'nonresidentSharePct', label: 'Нерезидентам' },
-  { field: 'overLimitSharePct', label: 'Сверх лимита' },
-  { field: 'status', label: 'Статус' },
-];
-
-function summarySortValue(row: RegionSummaryRow, field: SummarySortField): number | string {
-  if (field === 'region') return row.region;
-  if (field === 'status') return STATUS_SORT_RANK[row.status];
-  return row[field];
-}
 
 /**
  * Проекция, автоматически вписывающая фактическую геометрию kz-oblasts.json в размер холста —
@@ -122,16 +96,7 @@ export function KzHeatMap({ data, facts, filters }: KzHeatMapProps) {
   const [sortField, setSortField] = useState<SummarySortField>('volumeT');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const summaries = useMemo(() => computeRegionSummaries(facts, filters), [facts, filters]);
-  const sortedSummaries = useMemo(() => {
-    const rows = [...summaries];
-    rows.sort((a, b) => {
-      const va = summarySortValue(a, sortField);
-      const vb = summarySortValue(b, sortField);
-      const cmp = typeof va === 'string' ? va.localeCompare(vb as string, 'ru') : (va as number) - (vb as number);
-      return sortDir === 'asc' ? cmp : -cmp;
-    });
-    return rows;
-  }, [summaries, sortField, sortDir]);
+  const sortedSummaries = useMemo(() => sortSummaries(summaries, sortField, sortDir), [summaries, sortField, sortDir]);
   const handleSort = (field: SummarySortField) => {
     if (field === sortField) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));

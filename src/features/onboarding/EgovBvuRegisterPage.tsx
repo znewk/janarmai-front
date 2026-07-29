@@ -4,6 +4,8 @@ import { CheckCircle2 } from 'lucide-react';
 import { WizardShell } from './steps/WizardShell';
 import { VehicleCheckStep, type VehicleCheckResult } from './steps/VehicleCheckStep';
 import { LimitResultStep, type ResultCardSpec } from './steps/LimitResultStep';
+import { EgovMobileHomeMock } from './EgovMobileHomeMock';
+import { EgovOauthConsentMock } from './EgovOauthConsentMock';
 import { generateDemoFio, generateDemoIin, generateDemoPhone } from '@/lib/demoIdentity';
 import { deriveFlCardSpecs, deriveMonitoringCardSpec } from '@/lib/cardRules';
 import { finalizeFlRegistration } from './registrationActions';
@@ -11,8 +13,9 @@ import { maskIdentifier } from '@/lib/mask';
 import { Card, cardBaseClassName } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-type Step = 'identity' | 'vehicle' | 'result';
-const STEP_ORDER: Step[] = ['identity', 'vehicle', 'result'];
+type WizardStep = 'identity' | 'vehicle' | 'result';
+type Step = 'egov-home' | 'egov-consent' | WizardStep;
+const STEP_ORDER: WizardStep[] = ['identity', 'vehicle', 'result'];
 
 /**
  * Быстрый путь резидента через объединённый канал «eGov / банковское приложение» (ТЗ 4.1).
@@ -23,12 +26,12 @@ export function EgovBvuRegisterPage() {
   const navigate = useNavigate();
 
   const [identity] = useState(() => ({ fio: generateDemoFio(), iin: generateDemoIin(), phone: generateDemoPhone() }));
-  const [step, setStep] = useState<Step>('identity');
+  const [step, setStep] = useState<Step>('egov-home');
   const [consentChecked, setConsentChecked] = useState(false);
   const [monitoringOnly, setMonitoringOnly] = useState(false);
   const [vehicleResult, setVehicleResult] = useState<VehicleCheckResult | null>(null);
 
-  const stepIndex = STEP_ORDER.indexOf(step);
+  const stepIndex = STEP_ORDER.indexOf(step as WizardStep);
 
   const handleIssueCard = () => {
     finalizeFlRegistration({
@@ -42,6 +45,14 @@ export function EgovBvuRegisterPage() {
     });
     navigate('/card', { state: { justIssued: true } });
   };
+
+  if (step === 'egov-home') {
+    return <EgovMobileHomeMock onOpenApp={() => setStep('egov-consent')} />;
+  }
+
+  if (step === 'egov-consent') {
+    return <EgovOauthConsentMock onAllow={() => setStep('identity')} onDeny={() => setStep('egov-home')} onClose={() => navigate('/')} />;
+  }
 
   return (
     <WizardShell title="Регистрация · Через eGov / банковское приложение" stepIndex={stepIndex} stepCount={STEP_ORDER.length} onBack={() => navigate('/')}>
@@ -67,7 +78,7 @@ export function EgovBvuRegisterPage() {
               </div>
             </dl>
           </Card>
-          <Button type="button" disabled={!consentChecked} onClick={() => setStep(monitoringOnly ? 'result' : 'vehicle')} className="w-full">
+          <Button type="button" disabled={!consentChecked} onClick={() => setStep('vehicle')} className="w-full">
             Продолжить
           </Button>
           <label className={`${cardBaseClassName} flex-row items-start gap-3`}>
@@ -93,7 +104,7 @@ export function EgovBvuRegisterPage() {
         </div>
       )}
 
-      {step === 'vehicle' && !monitoringOnly && (
+      {step === 'vehicle' && (
         <VehicleCheckStep
           identifier={identity.iin}
           onComplete={(result) => {

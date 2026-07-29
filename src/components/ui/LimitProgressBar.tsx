@@ -2,6 +2,7 @@ import { Progress } from './progress';
 import { Card } from './card';
 
 export interface LimitProgressBarProps {
+  /** Использовано сегодня; для monitoringOnly-карт сюда передаётся общий объём покупок за всё время (см. `monitoringOnly`). */
   usedL: number;
   /** null — льготный лимит не применяется (иностранец/ЮЛ-нерезидент, либо monitoringOnly), потолка нет (см. OPEN_QUESTIONS.md). */
   limitL: number | null;
@@ -19,7 +20,7 @@ export function LimitProgressBar({ usedL, limitL, warningThreshold = 0.8, bare =
     const content = (
       <div>
         <p className="text-sm text-navy-600">
-          Куплено топлива сегодня: <span className="font-semibold text-navy-900">{usedL} л</span>
+          Куплено топлива всего: <span className="font-semibold text-navy-900">{usedL} л</span>
         </p>
       </div>
     );

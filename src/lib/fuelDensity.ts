@@ -35,6 +35,11 @@ export function litersToTonsAvg(volumeL: number): number {
   return (volumeL / 1000) * AVG_FUEL_DENSITY_T_PER_M3;
 }
 
+/** Обратный перевод (тонны → литры) усреднённой плотностью — для виджетов, где исходная величина уже в тоннах. */
+export function tonsToLitersAvg(volumeT: number): number {
+  return (volumeT / AVG_FUEL_DENSITY_T_PER_M3) * 1000;
+}
+
 export function formatTons(volumeT: number, fractionDigits = 1): string {
   return `${volumeT.toLocaleString('ru-RU', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })} т`;
 }

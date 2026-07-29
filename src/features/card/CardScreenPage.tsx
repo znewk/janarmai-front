@@ -82,7 +82,7 @@ export function CardScreenPage() {
   const cardLabel = `${CARD_TYPE_LABEL[activeCard.cardType]}${vehicle ? ` · ${vehicle.grnz}` : ''}`;
   const totalPurchasedL = activeCard.monitoringOnly ? transactions.filter((t) => t.cardId === activeCard.id).reduce((s, t) => s + t.volumeL, 0) : 0;
   const remainingLabel = activeCard.monitoringOnly
-    ? `${totalPurchasedL} л`
+    ? `${activeCard.usedTodayL} л`
     : activeCard.dailyLimitL !== null
       ? `${Math.max(activeCard.dailyLimitL - activeCard.usedTodayL, 0)} л`
       : 'без лимита';
@@ -122,25 +122,31 @@ export function CardScreenPage() {
         cardLabel={cardLabel}
         qrToken={activeCard.qrToken}
         remainingLabel={remainingLabel}
-        remainingCaption={activeCard.monitoringOnly ? 'Куплено топлива' : undefined}
+        remainingCaption={activeCard.monitoringOnly ? 'Куплено топлива сегодня' : undefined}
         qrRefreshSeconds={QR_REFRESH_SECONDS}
         onExpandQr={() => setQrExpanded(true)}
       />
 
-      <LimitProgressBar usedL={activeCard.usedTodayL} limitL={activeCard.dailyLimitL} monitoringOnly={activeCard.monitoringOnly} />
+      <LimitProgressBar
+        usedL={activeCard.monitoringOnly ? totalPurchasedL : activeCard.usedTodayL}
+        limitL={activeCard.dailyLimitL}
+        monitoringOnly={activeCard.monitoringOnly}
+      />
 
-      <Card className="gap-0 divide-y divide-gray-100 p-0">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Clock4 className="h-4 w-4 shrink-0 text-gray-400" />
-          <p className="flex-1 text-xs text-gray-500">Сброс лимита</p>
-          <p className="text-xs font-medium tabular-nums text-gray-700">{formatResetTime(activeCard.resetAt)} · Астана</p>
-        </div>
-        <div className="flex items-center gap-3 px-4 py-3">
-          <ShieldCheck className="h-4 w-4 shrink-0 text-gray-400" />
-          <p className="flex-1 text-xs text-gray-500">Цена в пределах лимита</p>
-          <p className="text-xs font-medium text-gray-700">{activeCard.priceEligible ? 'Льготная' : 'Предельная'}</p>
-        </div>
-      </Card>
+      {!activeCard.monitoringOnly && (
+        <Card className="gap-0 divide-y divide-gray-100 p-0">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Clock4 className="h-4 w-4 shrink-0 text-gray-400" />
+            <p className="flex-1 text-xs text-gray-500">Сброс лимита</p>
+            <p className="text-xs font-medium tabular-nums text-gray-700">{formatResetTime(activeCard.resetAt)} · Астана</p>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-gray-400" />
+            <p className="flex-1 text-xs text-gray-500">Цена в пределах лимита</p>
+            <p className="text-xs font-medium text-gray-700">{activeCard.priceEligible ? 'Льготная' : 'Предельная'}</p>
+          </div>
+        </Card>
+      )}
 
       <p className="text-center text-xs text-gray-400">Нажмите на QR-код на карте, чтобы предъявить его на АЗС</p>
 
